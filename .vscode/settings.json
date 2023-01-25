@@ -6,5 +6,6 @@
   "editor.codeActionsOnSave": ["source.fixAll.eslint"],
   "eslint.validate": ["javascript", "javascriptreact", "typescript", "vue"],
   "typescript.tsdk": "node_modules/typescript/lib",
-  "god.tsconfig": "./tsconfig.json"
+  "god.tsconfig": "./tsconfig.json",
+  "svg.preview.background": "transparent"
 }

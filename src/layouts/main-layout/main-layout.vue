@@ -10,7 +10,7 @@
     </q-header>
 
     <q-drawer v-model="leftDrawerOpen" side="left">
-      Playlists
+      <BBSidebar />
     </q-drawer>
 
     <q-page-container>
@@ -29,6 +29,7 @@
 </template>
 
 <script lang="ts" setup>
+import BBSidebar from '../../components/organisms/bb-sidebar/bb-sidebar.vue'
 import { ref } from 'vue'
 
 const leftDrawerOpen = ref(true)

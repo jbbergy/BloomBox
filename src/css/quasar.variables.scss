@@ -12,12 +12,39 @@
 // to match your app's branding.
 // Tip: Use the "Theme Builder" on Quasar's documentation website.
 
+$bb-color-black: #000;
+$bb-color-white: #fff;
+$bb-color-woodsmoke: #151519;
+$bb-color-cod-gray: #211c1c;
+$bb-color-masala: #403838;
+$bb-color-Feijoa: #adda78;
+$bb-color-lynch: #61748b;
+$bb-color-lavender-blush: #fff1f3;
+
+$bb-spacing-xsmall: 0.3rem;
+$bb-spacing-small: 0.5rem;
+$bb-spacing-regular: 1rem;
+$bb-spacing-large: 1.5rem;
+
+$bb-height-regular: 2.4rem;
+
+$bb-text-color-1: $bb-color-lynch;
+$bb-text-color-2: $bb-color-black;
+
+$bb-bg-color-1: $bb-color-masala;
+$bb-bg-color-2: $bb-color-white;
+
+$bb-font-size-regular: 1rem;
+$bb-font-size-large: 1.25rem;
+
+$bb-lighten-light: 5%;
+
 $primary: #1976d2;
 $secondary: #26a69a;
 $accent: #9c27b0;
 
-$dark: #211c1c;
-$dark-page: linear-gradient(180deg, #151519 0%, #070707 100%);
+$dark: $bb-color-cod-gray;
+$dark-page: linear-gradient(180deg, $bb-color-woodsmoke 0%, #070707 100%);
 
 $positive: #21ba45;
 $negative: #c10015;

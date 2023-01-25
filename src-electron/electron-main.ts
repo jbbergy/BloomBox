@@ -11,7 +11,7 @@ try {
       path.join(app.getPath('userData'), 'DevTools Extensions')
     );
   }
-} catch (_) {}
+} catch (_) { }
 
 let mainWindow: BrowserWindow | undefined;
 
@@ -21,8 +21,8 @@ function createWindow() {
    */
   mainWindow = new BrowserWindow({
     icon: path.resolve(__dirname, 'icons/icon.png'), // tray icon
-    width: 1000,
-    height: 600,
+    width: 1200,
+    height: 768,
     useContentSize: true,
     webPreferences: {
       contextIsolation: true,
@@ -30,7 +30,7 @@ function createWindow() {
       preload: path.resolve(__dirname, process.env.QUASAR_ELECTRON_PRELOAD),
     },
   });
-
+  mainWindow.autoHideMenuBar = true;
   mainWindow.loadURL(process.env.APP_URL);
 
   if (process.env.DEBUGGING) {
