@@ -1,71 +1,114 @@
 <template>
-  <div class="bb-tree">
+  <div
+    class="bb-tree"
+    @click="onClickItem($event)"
+  >
     <q-tree
-      :nodes="simple"
+      v-if="hasPlaylists"
+      :nodes="playlistsStore.getPlaylists"
       node-key="uuid"
       no-connectors
       v-model:selected="selectedNode"
     />
+    <div
+      v-if="showOverlay"
+      class="bb-tree__overlay"
+    >
+      <BBButton @click="onDeletePlaylist">
+        <inline-svg
+          :src="IconTrash"
+          aria-label="My image"
+        />
+      </BBButton>
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, defineEmits } from 'vue';
+import InlineSvg from 'vue-inline-svg'
+import { ref, onMounted, computed, watch } from 'vue';
+import BBButton from '../../atoms/bb-button/bb-button.vue'
+import IconTrash from '../../../assets/icons/i-trash.svg'
+import { usePlaylistsStore } from '../../../stores/playlists.store'
+import { usePlaylistsService } from '../../../services/playlists/playlists.service'
+import { useRouter } from 'vue-router'
 
-const emits = defineEmits(['node-selected'])
-
+const router = useRouter()
+const playlistsStore = usePlaylistsStore()
+const playlistsService = new usePlaylistsService()
 const selectedNode = ref(null)
 
-watch(selectedNode, (value: unknown) => {
-  emits('node-selected', value)
+const overlayY = ref('0px')
+const showOverlay = ref(false)
+
+watch(selectedNode, (node) => {
+  playlistsStore.selectedPlaylist = node
+  router.push({ name: 'tracklist'})
 })
 
-const simple = [
-        {
-          uuid: '0',
-          label: 'Satisfied customers (with avatar)',
-          avatar: 'https://cdn.quasar.dev/img/boy-avatar.png',
-          children: [
-            {
-              uuid: '01',
-              label: 'Good food (with icon)',
-              img: 'https://cdn.quasar.dev/img/logo_calendar_128px.png',
-              children: [
-                {
-                  uuid: '011',
-                  label: 'Quality ingredients'
-                },
-                {
-                  uuid: '012',
-                  label: 'Good recipe'
-                }
-              ]
-            },
-            {
-              uuid: '1',
-              label: 'Good service (disabled node with icon)',
-              icon: 'room_service',
-              disabled: true,
-              children: [
-                { uuid: '11', label: 'Prompt attention' },
-                { uuid: '12',  label: 'Professional waiter' }
-              ]
-            },
-            {
-              uuid: '2',
-              label: 'Pleasant surroundings (with icon)',
-              icon: 'photo',
-              children: [
-                {
-                  uuid: '21',
-                  label: 'Happy atmosphere (with image)',
-                  img: 'https://cdn.quasar.dev/img/logo_calendar_128px.png'
-                },
-                { uuid: '22',  label: 'Good table presentation' },
-                { uuid: '23',  label: 'Pleasing decor' }
-              ]
-            }
-          ]
-        }
-      ]
+const onClickItem = (event) => {
+  if (
+    event.target.classList.value.includes('bb-tree')
+    || event.target.classList.value.includes('q-tree ')
+  ) return
+  overlayY.value = `${event.pageY - event.offsetY - 48}px`
+  showOverlay.value = true
+}
+
+const onDeletePlaylist = async () => {
+  if(!confirm('Vous allez supprimer la playlist, on y va ?')) return
+  let foundItem: unknown = null
+  try {
+    foundItem = await playlistsService.findByUUID(selectedNode.value)
+  } catch (error) {
+    console.error(error)
+  }
+
+  if (!foundItem) return
+
+  try {
+    await playlistsService.delete(foundItem.key)
+    showOverlay.value = false
+    await playlistsStore.init()
+    router.push({ name: 'home'})
+  } catch (error) {
+    console.error(error)
+  }
+}
+
+onMounted(async () => {
+  try {
+    await playlistsStore.init()
+  } catch (error) {
+    console.error(error)
+  }
+})
+
+const hasPlaylists = computed(() => {
+  return playlistsStore.getPlaylists?.length > 0
+})
 </script>
+
+<style lang="scss">
+.bb-tree {
+  padding: $bb-spacing-small;
+
+  &__overlay {
+    position: absolute;
+    right: $bb-spacing-small;
+    top: v-bind(overlayY);
+
+    .bb-button {
+
+      &__element {
+        background-color: transparent;
+      }
+
+      svg {
+        fill: $bb-color-lynch;
+        height: 80%;
+      }
+    }
+  }
+}
+</style>

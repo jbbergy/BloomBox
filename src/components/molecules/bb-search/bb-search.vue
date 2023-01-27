@@ -5,14 +5,14 @@
     <BBButton>
       <inline-svg
         :src="IconHome"
-        aria-label="My image"
+        aria-label="Retourner sur la page d'accueil"
       />
     </BBButton>
-    <BBInput />
+    <BBInput placeholder="Rechercher" />
     <BBButton>
       <inline-svg
         :src="IconSort"
-        aria-label="My image"
+        aria-label="Changer l'order des playlists"
       />
     </BBButton>
   </div>

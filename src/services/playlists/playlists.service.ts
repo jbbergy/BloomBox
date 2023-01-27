@@ -3,26 +3,23 @@ import { PLAYLIST_STORE_NAME, iBloomBoxDB } from '../interfaces/playlists-db.int
 
 const DATABASE_NAME = 'BBdb'
 
-export class PlaylistsService {
+export class usePlaylistsService {
   private dbPromise: Promise<IDBDatabase<iBloomBoxDB>>
 
   constructor() {
-    this.dbPromise = openDB<iBloomBoxDB>(DATABASE_NAME, 1, {
-      upgrade(db) {
-        db.createObjectStore(PLAYLIST_STORE_NAME, {
-          keyPath: 'key',
-          autoIncrement: true
-        })
-      }
-    })
+    this.dbPromise = openDB<iBloomBoxDB>(DATABASE_NAME, 1)
   }
 
   async create(data: unknown) {
-    const db = await this.dbPromise
-    const tx = db.transaction(PLAYLIST_STORE_NAME, 'readwrite')
-    const store = tx.objectStore(PLAYLIST_STORE_NAME)
-    store.add({ value: data })
-    return tx.complete
+    try {
+      const db = await this.dbPromise
+      const tx = db.transaction(PLAYLIST_STORE_NAME, 'readwrite')
+      const store = tx.objectStore(PLAYLIST_STORE_NAME)
+      store.add(data)
+      return tx.complete
+    } catch (error) {
+      throw error
+    }
   }
 
   async read(key: number) {
@@ -47,7 +44,8 @@ export class PlaylistsService {
     return tx.complete
   }
 
-  async delete(key: number) {
+  async delete(key: string) {
+    console.log('delete key', key)
     const db = await this.dbPromise
     const tx = db.transaction(PLAYLIST_STORE_NAME, 'readwrite')
     const store = tx.objectStore(PLAYLIST_STORE_NAME)
@@ -65,5 +63,13 @@ export class PlaylistsService {
 
   async deleteDatabase() {
     await deleteDB(DATABASE_NAME)
+  }
+
+  async findByUUID(uuid: string) {
+    const db = await this.dbPromise;
+    const tx = db.transaction(PLAYLIST_STORE_NAME, 'readonly');
+    const store = tx.objectStore(PLAYLIST_STORE_NAME);
+    const items = await store.getAll();
+    return items.find(item => item.uuid === uuid);
   }
 }

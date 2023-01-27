@@ -1,17 +1,15 @@
 <template>
   <div class="bb-sidebar">
     <BBSearch />
-    <BBTree @node-selected="onPlaylistSelected" />
+    <BBPlaylistCreate />
+    <BBTree />
   </div>
 </template>
 
 <script lang="ts" setup>
 import BBSearch from '../../molecules/bb-search/bb-search.vue';
 import BBTree from '../../atoms/bb-tree/bb-tree.vue';
-
-function onPlaylistSelected(value: unknown) {
-  console.log('onPlaylistSelected', value)
-}
+import BBPlaylistCreate from '../../molecules/bb-playilist-create/bb-playlist-create.vue'
 </script>
 
 <style lang="scss">

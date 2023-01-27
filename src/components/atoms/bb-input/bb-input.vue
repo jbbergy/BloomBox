@@ -1,8 +1,53 @@
 <template>
   <div class="bb-input">
-    <input type="text" class="bb-input__element"/>
+    <input
+      :id="inputId"
+      :value="modelValue"
+      @input="$emit('update:modelValue', $event.target.value)"
+      @keyup.enter="onPressEnter"
+      type="text"
+      class="bb-input__element"
+      :placeholder="placeholder"
+    />
   </div>
 </template>
+
+<script lang="ts" setup>
+import { v4 as uuid } from 'uuid'
+import { defineProps, defineEmits, onMounted } from 'vue'
+
+const inputId = uuid()
+
+const props = defineProps({
+  modelValue: {
+    type: String,
+    default: null
+  },
+  placeholder: {
+    type: String,
+    default: null
+  },
+  focusWhenReady: {
+    type: Boolean,
+    default: false
+  }
+})
+
+const emits = defineEmits(['update:modelValue', 'press:enter'])
+
+onMounted(() => {
+  if (props.focusWhenReady) {
+    const input = document.getElementById(inputId)
+    if (input) {
+      input.focus()
+    }
+  }
+})
+
+const onPressEnter = () => {
+  emits('press:enter')
+}
+</script>
 
 <style lang="scss">
 .bb-input {
@@ -14,7 +59,7 @@
     background-color: $bb-bg-color-1;
     padding: 0 $bb-spacing-xsmall;
     border:0;
-    border-radius: 0.3rem;
+    border-radius: $bb-border-radius-regular;
     color: $bb-text-color-1;
     font-size: $bb-font-size-large;
     line-height: $bb-font-size-large;
