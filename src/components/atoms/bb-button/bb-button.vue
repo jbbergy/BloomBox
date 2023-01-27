@@ -20,9 +20,14 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    outline: none;
 
     &:hover {
       background-color: lighten($bb-bg-color-1, $bb-lighten-light);
+    }
+
+    &:focus {
+      border: 1px solid $bb-element-outline-accent;
     }
   }
 }

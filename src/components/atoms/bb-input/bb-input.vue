@@ -72,6 +72,7 @@ const onPressEnter = () => {
     &:focus {
       background-color:$bb-bg-color-2;
       color: $bb-text-color-2;
+      border: 1px solid $bb-element-outline-accent;
     }
   }
 }
