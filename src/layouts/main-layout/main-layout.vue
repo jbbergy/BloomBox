@@ -20,7 +20,7 @@
     <q-footer class="bg-dark text-white">
       <q-toolbar>
         <q-toolbar-title>
-          <div>player</div>
+          <BBPlayer />
         </q-toolbar-title>
       </q-toolbar>
     </q-footer>
@@ -30,6 +30,7 @@
 
 <script lang="ts" setup>
 import BBSidebar from '../../components/organisms/bb-sidebar/bb-sidebar.vue'
+import BBPlayer from '../../components/organisms/bb-player/bb-player.vue'
 import { ref } from 'vue'
 
 const leftDrawerOpen = ref(true)
