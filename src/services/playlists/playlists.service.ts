@@ -40,12 +40,11 @@ export class usePlaylistsService {
     const db = await this.dbPromise
     const tx = db.transaction(PLAYLIST_STORE_NAME, 'readwrite')
     const store = tx.objectStore(PLAYLIST_STORE_NAME)
-    store.put({ key, value: data })
+    store.put(data)
     return tx.complete
   }
 
   async delete(key: string) {
-    console.log('delete key', key)
     const db = await this.dbPromise
     const tx = db.transaction(PLAYLIST_STORE_NAME, 'readwrite')
     const store = tx.objectStore(PLAYLIST_STORE_NAME)

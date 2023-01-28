@@ -42,7 +42,9 @@ const overlayY = ref('0px')
 const showOverlay = ref(false)
 
 watch(selectedNode, (node) => {
-  playlistsStore.selectedPlaylist = node
+  if (!node) return
+  const playlist = playlistsStore.playlists.find(p => p.uuid === node)
+  playlistsStore.selectedPlaylist = playlist
   router.push({ name: 'tracklist'})
 })
 

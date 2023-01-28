@@ -44,7 +44,7 @@
 <script lang="ts" setup>
 import { v4 as uuid } from 'uuid'
 import InlineSvg from 'vue-inline-svg'
-import { ref, watch, nextTick } from 'vue';
+import { ref } from 'vue';
 import { usePlaylistsStore } from '../../../stores/playlists.store'
 import BBButton from '../../atoms/bb-button/bb-button.vue'
 import BBInput from '../../atoms/bb-input/bb-input.vue'

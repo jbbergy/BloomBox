@@ -14,7 +14,7 @@
 
 <script lang="ts" setup>
 import { v4 as uuid } from 'uuid'
-import { defineProps, defineEmits, onMounted } from 'vue'
+import { onMounted } from 'vue'
 
 const inputId = uuid()
 
