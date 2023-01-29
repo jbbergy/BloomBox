@@ -1,6 +1,6 @@
 import { Howl, Howler } from 'howler';
 
-export class useAudioService {
+export class AudioService {
   _howlInstance: Howl | null
   _isPaused = true
   _isPlaying = false
@@ -57,7 +57,6 @@ export class useAudioService {
     this._instanceId = this._howlInstance.play()
     this._isPaused = false
     this._isPlaying = true
-    console.log('_isPlaying', this._isPlaying)
   }
 
   pause() {

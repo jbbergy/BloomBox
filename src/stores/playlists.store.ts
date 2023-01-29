@@ -9,7 +9,9 @@ const playlistService = new usePlaylistsService()
 export const usePlaylistsStore = defineStore('playlists', {
   state: () => ({
     playlists: [],
-    selectedPlaylist: null
+    selectedPlaylist: null,
+    selectedFile: null,
+    playingFile: null,
   }),
   getters: {
     getPlaylists: (state) => state.playlists?.map(p => {
@@ -19,6 +21,7 @@ export const usePlaylistsStore = defineStore('playlists', {
         img: p.img,
         files: p.files,
         children: p.children,
+        key: p.key
       }
       return val
     }),
@@ -61,7 +64,7 @@ export const usePlaylistsStore = defineStore('playlists', {
         console.error('ERROR playlist service delete : ', error)
       }
     },
-    async addFileToPlaylist(files: any[], playlist: iPlaylist) {
+    async addFilesToPlaylist(files: any[], playlist: iPlaylist) {
       if (files?.length <= 0) return
       const formattedFiles = Array.from(files).map(f => {
         const file: iFile = {
@@ -82,7 +85,7 @@ export const usePlaylistsStore = defineStore('playlists', {
         await playlistService.update(newPlaylist.key, newPlaylist)
         this.selectedPlaylist = newPlaylist
       } catch (error) {
-        console.error('ERROR playlist service addFileToPlaylist #1 : ', error)
+        console.error('ERROR playlist service addFilesToPlaylist #1 : ', error)
       }
 
       try {

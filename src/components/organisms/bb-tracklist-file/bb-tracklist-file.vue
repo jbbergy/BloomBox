@@ -1,7 +1,7 @@
 <template>
   <div
     class="bb-tracklist-file"
-    @dblclick="onPlay"
+    @click="onSelect"
   >
     <div class="bb-tracklist-file__playing">
       <inline-svg
@@ -25,12 +25,11 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
 import InlineSvg from 'vue-inline-svg'
 import IconPlay from '../../../assets/icons/i-play.svg'
-import { useAudioService } from '../../../services/audio/audio.service'
+import { usePlaylistsStore } from '../../../stores/playlists.store'
 
-const audioService = ref(null)
+const playlistsStore = usePlaylistsStore()
 
 const props = defineProps({
   file: {
@@ -39,10 +38,8 @@ const props = defineProps({
   }
 })
 
-const onPlay = () => {
-  audioService.value = new useAudioService(props.file.path)
-  audioService.value.setVolume(0.5)
-  audioService.value.play()
+const onSelect = () => {
+  playlistsStore.selectedFile = props.file
 }
 </script>
 
