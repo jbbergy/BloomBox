@@ -1,10 +1,10 @@
 import { Howl, Howler } from 'howler';
 
 export class AudioService {
-  _howlInstance: Howl | null
-  _isPaused = true
-  _isPlaying = false
-  _instanceId: number | undefined = undefined
+  private _howlInstance: Howl | null
+  private _isPaused = true
+  private _isPlaying = false
+  private _instanceId: number | undefined = undefined
 
   constructor(file: string) {
     if (Howler.noAudio) {

@@ -3,10 +3,18 @@ import { AudioService } from '../services/audio/audio.service'
 
 export const usePlayerStore = defineStore('player', {
   state: () => ({
-    currentInstance: null,
+    currentInstance: null as AudioService | null,
     defaultVolume: 0.8,
   }),
   actions: {
+    pause() {
+      if (!this.currentInstance) return
+      if (this.currentInstance.getIsPlaying()) {
+        this.currentInstance.pause()
+      } else {
+        this.currentInstance.play()
+      }
+    },
     play(filePath: string) {
       if (this.currentInstance) {
         this.currentInstance.stop()

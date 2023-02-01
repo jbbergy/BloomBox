@@ -8,10 +8,8 @@ const playlistService = new usePlaylistsService()
 
 export const usePlaylistsStore = defineStore('playlists', {
   state: () => ({
-    playlists: [],
-    selectedPlaylist: null,
-    selectedFile: null,
-    playingFile: null,
+    playlists: [] as iPlaylist[] | null,
+    selectedPlaylist: null as iPlaylist | null,
   }),
   getters: {
     getPlaylists: (state) => state.playlists?.map(p => {
@@ -35,6 +33,8 @@ export const usePlaylistsStore = defineStore('playlists', {
       }
     },
     async create(playlist: iPlaylist) {
+      if (!this.playlists) return
+
       this.playlists.push(playlist as never)
       try {
         await playlistService.create(playlist)
@@ -42,21 +42,25 @@ export const usePlaylistsStore = defineStore('playlists', {
         console.error('ERROR playlist service create #1 : ', error)
       }
 
-      let newPlaylist = null
+      let newPlaylist: iPlaylist | null = null
       try {
         newPlaylist = await playlistService.findByUUID(playlist.uuid)
       } catch (error) {
         console.error('ERROR playlist service create #2 : ', error)
       }
+
       if (!newPlaylist) return
+
       try {
-        const idx = this.playlists.findIndex(p => p.uuid === newPlaylist.uuid)
+        const idx = this.playlists.findIndex(p => p.uuid === newPlaylist?.uuid)
         this.playlists[idx] = newPlaylist
       } catch (error) {
         console.error('ERROR playlist service create #2 : ', error)
       }
     },
     async delete(playlist: iPlaylist) {
+      if (!this.playlists) return
+
       this.playlists.push(playlist as never)
       try {
         await playlistService.delete(playlist.uuid)
@@ -64,12 +68,12 @@ export const usePlaylistsStore = defineStore('playlists', {
         console.error('ERROR playlist service delete : ', error)
       }
     },
-    async addFilesToPlaylist(files: any[], playlist: iPlaylist) {
+    async addFilesToPlaylist(files: iFile[], playlist: iPlaylist) {
       if (files?.length <= 0) return
       const formattedFiles = Array.from(files).map(f => {
         const file: iFile = {
           uuid: uuid(),
-          label: f.name,
+          label: f.label,
           path: f.path,
           img: '',
           type: f.type,
@@ -89,7 +93,7 @@ export const usePlaylistsStore = defineStore('playlists', {
       }
 
       try {
-        const idx = this.playlists.findIndex(p => p.uuid === newPlaylist.uuid)
+        const idx = this.playlists?.findIndex(p => p.uuid === newPlaylist.uuid)
         this.playlists[idx] = newPlaylist
       } catch (error) {
         console.error('ERROR playlist service create #2 : ', error)
