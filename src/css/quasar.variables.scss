@@ -33,13 +33,15 @@ $bb-height-regular: 2.4rem;
 $bb-text-color-1: $bb-color-lynch;
 $bb-text-color-2: $bb-color-black;
 $bb-text-color-3: $bb-color-Feijoa;
+$bb-text-color-4: $bb-color-white;
 
 $bb-element-outline-accent: $bb-color-Feijoa;
 
 $bb-bg-color-1: $bb-color-masala;
 $bb-bg-color-2: $bb-color-white;
 
-$bb-font-size-regular: 1rem;
+$bb-font-size-small: 0.75rem;
+$bb-font-size-regular: 0.85rem;
 $bb-font-size-large: 1.25rem;
 $bb-font-size-xlarge: 4rem;
 
@@ -57,7 +59,7 @@ $secondary: #26a69a;
 $accent: #9c27b0;
 
 $dark: $bb-color-cod-gray;
-$dark-page: linear-gradient(180deg, $bb-color-woodsmoke 0%, #070707 100%);
+$dark-page: linear-gradient(180deg, $bb-color-cod-gray 0%, #070707 100%);
 
 $positive: #21ba45;
 $negative: #c10015;

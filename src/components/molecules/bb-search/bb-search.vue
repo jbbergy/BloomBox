@@ -2,7 +2,7 @@
 
 <template>
   <div class="bb-search">
-    <BBButton>
+    <BBButton @click="goHome">
       <inline-svg
         :src="IconHome"
         aria-label="Retourner sur la page d'accueil"
@@ -24,6 +24,13 @@ import BBButton from '../../atoms/bb-button/bb-button.vue'
 import BBInput from '../../atoms/bb-input/bb-input.vue'
 import IconHome from '../../../assets/icons/i-home.svg'
 import IconSort from '../../../assets/icons/i-sort.svg'
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+const goHome = () => {
+  router.push({ name: 'home' });
+}
 </script>
 
 <style lang="scss">

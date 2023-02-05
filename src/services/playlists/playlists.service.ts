@@ -7,8 +7,14 @@ const DATABASE_NAME = 'BBdb'
 export class usePlaylistsService {
   private dbPromise: Promise<IDBDatabase<iBloomBoxDB>>
 
-  constructor() {
-    this.dbPromise = openDB<iBloomBoxDB>(DATABASE_NAME, 1)
+  async init() {
+    this.dbPromise = await openDB<iBloomBoxDB>(DATABASE_NAME, 1, {
+      upgrade(db) {
+        if (!db.objectStoreNames.contains(PLAYLIST_STORE_NAME)) {
+          db.createObjectStore(PLAYLIST_STORE_NAME, { keyPath: 'key', autoIncrement: true });
+        }
+      }
+    })
   }
 
   async create(data: iPlaylist) {

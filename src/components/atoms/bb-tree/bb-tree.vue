@@ -17,7 +17,7 @@
 
 <script lang="ts" setup>
 import InlineSvg from 'vue-inline-svg';
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, onMounted, onBeforeMount, computed, watch } from 'vue';
 import BBButton from '../../atoms/bb-button/bb-button.vue';
 import IconTrash from '../../../assets/icons/i-trash.svg';
 import { usePlaylistsStore } from '../../../stores/playlists.store';
@@ -69,7 +69,13 @@ const onDeletePlaylist = async () => {
     console.error(error);
   }
 };
-
+onBeforeMount(async () => {
+  try {
+    await playlistsService.init();
+  } catch (error) {
+    console.error(error);
+  }
+})
 onMounted(async () => {
   try {
     await playlistsStore.init();

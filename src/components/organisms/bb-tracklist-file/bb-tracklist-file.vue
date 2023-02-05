@@ -3,7 +3,7 @@
     :class="[
       'bb-tracklist-file',
       isPlaying && 'bb-tracklist-file--is-playing',
-      isSelected && 'bb-tracklist-file--is-selected'
+      isSelected && 'bb-tracklist-file--is-selected',
     ]"
     @click="onSelect"
     @dblclick="onPlayFile"
@@ -15,27 +15,64 @@
       <img :src="trackPicture" alt="Cover" />
     </div>
     <div class="bb-tracklist-file__title">
-      {{ file.artist ? file.artist + ' - ' : '' }}
-      {{ file.album ? file.album + ' - ' : '' }}
       {{ file.label }}
     </div>
-    <div class="bb-tracklist-file__time">4:32</div>
+    <div class="bb-tracklist-file__album">
+      {{ file.album }}
+    </div>
+    <div class="bb-tracklist-file__artist">
+      {{ file.artist }}
+    </div>
+    <div class="bb-tracklist-file__time">
+      {{ trackTime }}
+    </div>
     <div class="bb-tracklist-file__actions">actions</div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { Buffer } from 'buffer'
-import PicturePlaceholder from '../../../assets/img/cover.jpg'
-import { PropType, computed } from 'vue';
+import { Buffer } from 'buffer';
+import PicturePlaceholder from '../../../assets/img/cover.jpg';
+import { PropType, computed, onMounted, ref } from 'vue';
 import { iFile } from 'src/services/interfaces/file.interface';
+import { readMetadata } from '../../../services/metadata/metadata.service';
 import InlineSvg from 'vue-inline-svg';
 import IconPlay from '../../../assets/icons/i-play.svg';
 import { usePlayQueueStore } from '../../../stores/play-queue.store';
-import { usePlaylistsStore } from '../../../stores/playlists.store'
+import { usePlaylistsStore } from '../../../stores/playlists.store';
 
 const playQueueStore = usePlayQueueStore();
-const playlistsStore = usePlaylistsStore()
+const playlistsStore = usePlaylistsStore();
+const pictureData = ref(null);
+const savedPictures = ref({})
+const trackPicture = ref(null)
+
+onMounted(async () => {
+  let metadata = null;
+  trackPicture.value = PicturePlaceholder
+  try {
+    metadata = await readMetadata(props.file.path);
+  } catch (error) {
+    console.error(error);
+  }
+  if (metadata) {
+    pictureData.value = metadata.tags?.picture;
+  }
+
+  // TODO: déplacer la gestion des images dans le store
+  // utiliser une hashmap ici n'a pas vraiment de sens
+  // je me demande d'ailleurs comment ça se fait que
+  // ça a réduit la consommationde mémoire
+  if (pictureData?.value?.data) {
+    let result = savedPictures.value[props.file.album]
+    if (!result) {
+      let image = Buffer.from(pictureData.value.data).toString('base64')
+      result = `data:${pictureData.value.format};base64,${image}`
+      savedPictures.value[props.file.album] = result
+    }
+    trackPicture.value = result
+  }
+});
 
 const props = defineProps({
   file: {
@@ -52,26 +89,34 @@ const props = defineProps({
   },
 });
 
-
-const trackPicture = computed(() => {
-  if (props.file?.picture?.data) {
-    let image = Buffer.from(props.file?.picture?.data).toString('base64')
-    return `data:${props.file?.picture?.format};base64,${image}`
+const trackTime = computed(() => {
+  const time = getFileDuration(props.file.time)
+  if (time) {
+    return `${time.m}:${time.s}`
   } else {
-    return PicturePlaceholder
+    return '--:--'
   }
-
 })
+
+const getFileDuration = (duration) => {
+  const minuts = Math.floor(duration / 60)
+  const seconds = Math.floor(duration % 60)
+
+  return {
+    m: minuts,
+    s: seconds < 10 ? `0${seconds}` : seconds,
+  }
+}
 
 const onSelect = () => {
   playQueueStore.selectedFile = props.file;
 };
 
 const onPlayFile = () => {
-  if (!playQueueStore.selectedFile) return
-  playQueueStore.playingFile = playQueueStore.selectedFile
-  playQueueStore.addToQueue(playlistsStore.selectedPlaylist?.files)
-}
+  if (!playQueueStore.selectedFile) return;
+  playQueueStore.playingFile = playQueueStore.selectedFile;
+  playQueueStore.addToQueue(playlistsStore.selectedPlaylist?.files);
+};
 </script>
 
 <style lang="scss">
@@ -79,12 +124,12 @@ const onPlayFile = () => {
   $self: &;
   padding: $bb-spacing-small;
   display: grid;
-  grid-template-columns: 2rem 2rem auto 4rem 4rem;
-  height: 3rem;
+  grid-template-columns: 2rem 2rem 2fr 2fr 2fr 1fr 1fr;
+  height: 3.5rem;
   align-items: center;
   column-gap: $bb-spacing-regular;
   user-select: none;
-  transition: all .25s ease;
+  font-size: $bb-font-size-regular;
 
   &__cover {
     display: flex;

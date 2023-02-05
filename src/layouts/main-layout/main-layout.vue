@@ -58,7 +58,7 @@ import BBSidebar from '../../components/organisms/bb-sidebar/bb-sidebar.vue'
 import BBPlayer from '../../components/organisms/bb-player/bb-player.vue'
 import { ref } from 'vue'
 
-const showDebug = ref(true)
+const showDebug = ref(false)
 
 const playQueueStore = usePlayQueueStore()
 const playlistsStore = usePlaylistsStore()

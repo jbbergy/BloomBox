@@ -6,7 +6,7 @@ import { iFile } from '../services/interfaces/file.interface'
 import { usePlaylistsService } from '../services/playlists/playlists.service'
 import { readMetadata } from '../services/metadata/metadata.service'
 
-const playlistService = new usePlaylistsService()
+let playlistService = null
 
 export const usePlaylistsStore = defineStore('playlists', {
   state: () => ({
@@ -15,6 +15,10 @@ export const usePlaylistsStore = defineStore('playlists', {
   }),
   actions: {
     async init() {
+      if (!playlistService) {
+        playlistService = new usePlaylistsService()
+        await playlistService.init()
+      }
       try {
         this.playlists = await playlistService.readAll()
       } catch (error) {
@@ -22,6 +26,10 @@ export const usePlaylistsStore = defineStore('playlists', {
       }
     },
     async create(playlist: iPlaylist) {
+      if (!playlistService) {
+        playlistService = new usePlaylistsService()
+        await playlistService.init()
+      }
       if (!this.playlists) return
 
       try {
@@ -48,6 +56,10 @@ export const usePlaylistsStore = defineStore('playlists', {
       }
     },
     async delete(playlist: iPlaylist) {
+      if (!playlistService) {
+        playlistService = new usePlaylistsService()
+        await playlistService.init()
+      }
       if (!this.playlists) return
 
       this.playlists.push(playlist as never)
@@ -58,6 +70,10 @@ export const usePlaylistsStore = defineStore('playlists', {
       }
     },
     async formatFile(fileToFormat: iFile) {
+      if (!playlistService) {
+        playlistService = new usePlaylistsService()
+        await playlistService.init()
+      }
       let metadata: iMetadata | null = null
       try {
         metadata = await readMetadata(fileToFormat.path)
@@ -83,6 +99,10 @@ export const usePlaylistsStore = defineStore('playlists', {
       return file
     },
     async addFilesToPlaylist(files: iFile[], playlist: iPlaylist) {
+      if (!playlistService) {
+        playlistService = new usePlaylistsService()
+        await playlistService.init()
+      }
       if (files?.length <= 0) return
       const formattedFiles = Array.from(files)
 
@@ -90,7 +110,29 @@ export const usePlaylistsStore = defineStore('playlists', {
       await Promise.all(formattedFiles.map(async (file) => {
         if (!newPlaylist.files) newPlaylist.files = []
         const result = await this.formatFile(file)
-        if (result) newPlaylist.files.push(result)
+
+        if (result) {
+
+          let audio: HTMLAudioElement | null = new Audio(result.path)
+          const getDuration = () => {
+            return new Promise((resolve) => {
+              if (audio) {
+                audio.onloadedmetadata = function (data) {
+                  resolve(data?.currentTarget?.duration);
+                }
+              }
+            })
+          }
+
+          try {
+            result.time = await getDuration()
+            audio = null
+          } catch (error) {
+            console.error('getDuration error', error)
+          }
+
+          newPlaylist.files.push(result)
+        }
       }))
 
       try {
@@ -104,7 +146,7 @@ export const usePlaylistsStore = defineStore('playlists', {
         const idx = this.playlists?.findIndex(p => p.uuid === newPlaylist.uuid)
         this.playlists[idx] = newPlaylist
       } catch (error) {
-        console.error('ERROR playlist service create #2 : ', error)
+        console.error('ERROR playlist service addFilesToPlaylist #2 : ', error)
       }
     },
   },

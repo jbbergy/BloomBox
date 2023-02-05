@@ -3,7 +3,9 @@
     <button
       :class="[
         'bb-transport-button__element',
-        `bb-transport-button__element--${size}`
+        `bb-transport-button__element--${size}`,
+        noBg && 'bb-transport-button__element--no-bg',
+        isActive && 'bb-transport-button__element--is-active'
       ]"
     >
       <slot />
@@ -17,6 +19,14 @@ defineProps({
     type: String,
     default: 'regular',
     validator: (value) => ['regular', 'large'].includes(value)
+  },
+  noBg: {
+    type: Boolean,
+    default: false,
+  },
+  isActive: {
+    type: Boolean,
+    default: false,
   }
 })
 </script>
@@ -30,6 +40,7 @@ defineProps({
   padding: $bb-spacing-xsmall;
 
   &__element {
+    position: relative;
     background-color: $bb-bg-color-2;
     border: 0;
     border-radius: 999px;
@@ -38,6 +49,10 @@ defineProps({
     align-items: center;
     padding: 0;
     margin: 0;
+
+    &:hover {
+      background-color: $bb-text-color-3;
+    }
 
     &--regular {
       width: $size-regular;
@@ -56,6 +71,35 @@ defineProps({
       svg {
         height: $size-large / 2;
         fill: $bb-text-color-2;
+      }
+    }
+
+    &--no-bg {
+      background-color: transparent;
+
+      svg {
+        fill: $bb-text-color-4;
+      }
+
+      &:hover {
+        background-color: rgba($bb-text-color-4, 0.15);
+      }
+    }
+
+    &--is-active {
+
+      svg {
+        fill: $bb-text-color-3;
+      }
+
+      &::after {
+        position: absolute;
+        content: '';
+        width: 0.25rem;
+        height: 0.25rem;
+        background-color: $bb-text-color-3;
+        border-radius: 999px;
+        bottom: $bb-spacing-xsmall;
       }
     }
   }

@@ -6,6 +6,10 @@
   "author": "Jean-Baptiste BERGY <jb.bergy@gmail.com>",
   "private": true,
   "scripts": {
+    "dev": "quasar dev -m electron",
+    "dev:tool": "quasar dev -m electron --devtools",
+    "build": "quasar build -m electron",
+    "build:debug": "quasar build -m electron -d",
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
     "test": "echo \"No test specified\" && exit 0"
@@ -29,8 +33,10 @@
     "@types/uuid": "^9.0.0",
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",
+    "@vue/devtools": "^6.5.0",
     "autoprefixer": "^10.4.2",
     "electron": "^22.0.2",
+    "electron-packager": "^15.2.0",
     "eslint": "^8.10.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-vue": "^9.0.0",
