@@ -8,4 +8,6 @@ const $q = useQuasar()
 
 $q.dark.set(true)
 
+document.body.classList.add('custom-scrollbar')
+
 </script>

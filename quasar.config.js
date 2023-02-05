@@ -55,6 +55,16 @@ module.exports = configure(function (/* ctx */) {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#build
     build: {
+      vueLoaderOptions: {
+        compilerOptions: {
+          'composite': true,
+          'module': 'ESNext',
+          'moduleResolution': 'Node',
+          'allowSyntheticDefaultImports': true,
+          'skipLibCheck': true,
+          'suppressImplicitAnyIndexErrors': true,
+        }
+      },
       devtool: 'source-map',
       target: {
         browser: ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
@@ -81,9 +91,7 @@ module.exports = configure(function (/* ctx */) {
       // viteVuePluginOptions: {},
 
 
-      // vitePlugins: [
-      //   [ 'package-name', { ..options.. } ]
-      // ]
+      // vitePlugins: ['@babel/plugin-transform-modules-commonjs']
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer

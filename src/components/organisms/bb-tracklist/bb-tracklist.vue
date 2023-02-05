@@ -6,6 +6,7 @@
         :key="file.uuid"
         :file="file"
         :is-playing="isPlaying(file)"
+        :is-selected="isSelected(file)"
       />
     </template>
   </div>
@@ -23,10 +24,23 @@ const playlistsStore = usePlaylistsStore()
 
 const files = computed(() => {
   if (!playlistsStore.selectedPlaylist) return
-  return playlistsStore.selectedPlaylist?.files
+  if (playlistsStore.selectedPlaylist?.files?.length > 0) {
+    return playlistsStore.selectedPlaylist?.files
+  }
+  return null
 })
 
 const isPlaying = (file: iFile) => {
 return file.uuid === playQueueStore.playingFile?.uuid
 }
+
+const isSelected = (file: iFile) => {
+return file.uuid === playQueueStore.selectedFile?.uuid
+}
 </script>
+
+<style lang="scss">
+.bb-tracklist {
+  padding-bottom: $bb-spacing-large;
+}
+</style>

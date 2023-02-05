@@ -1,14 +1,21 @@
 <template>
   <div class="bb-player">
     <div class="bb-player__left">
-      {{ playQueueStore.selectedFile }}
     </div>
     <div class="bb-player__middle">
       <div class="bb-player__transport">
-        <button @click="onPlayFile">Play</button>
-        <button @click="onPauseFile">Pause</button>
-        <button @click="onPrevFile">Prev</button>
-        <button @click="onNextFile">Next</button>
+        <BBTransportButton @click="onPrevFile">
+          <inline-svg :src="IconPrev" aria-label="Fichier précédent" />
+        </BBTransportButton>
+        <BBTransportButton @click="onPlayFile" size="large">
+          <inline-svg :src="IconPlay" aria-label="Bouton de lecture" />
+        </BBTransportButton>
+        <BBTransportButton @click="onPauseFile" size="large">
+          <inline-svg :src="IconPause" aria-label="Bouton de lecture" />
+       </BBTransportButton>
+        <BBTransportButton @click="onNextFile">
+          <inline-svg :src="IconNext" aria-label="Fichier suivant" />
+        </BBTransportButton>
       </div>
       <div class="bb-player__seek"></div>
     </div>
@@ -17,6 +24,12 @@
 </template>
 
 <script lang="ts" setup>
+import InlineSvg from 'vue-inline-svg';
+import IconPlay from '../../../assets/icons/i-play.svg';
+import IconPause from '../../../assets/icons/i-pause.svg';
+import IconPrev from '../../../assets/icons/i-step-backward.svg';
+import IconNext from '../../../assets/icons/i-step-forward.svg';
+import BBTransportButton from '../../../components/atoms/bb-transport-button/bb-transport-button.vue'
 import { iFile } from 'src/services/interfaces/file.interface';
 import { watch, computed } from 'vue'
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
@@ -54,7 +67,9 @@ const playingFile = computed(() => {
 
 watch(playingFile, (value: iFile) => {
   if (value) {
-    playerStore.play(value.path)
+    playerStore.play(value.path, () => {
+      onNextFile()
+    })
   }
 }, {
   deep: true
@@ -65,5 +80,8 @@ watch(playingFile, (value: iFile) => {
 <style lang="scss">
 .bb-player {
   padding: $bb-spacing-small;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>

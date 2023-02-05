@@ -1,10 +1,10 @@
 import { iFile } from './file.interface'
 
 export interface iPlaylist {
-  key: number,
+  key?: number,
   uuid: string,
   label: string,
   img: string,
-  files?: iFile[],
+  files?: iFile[] | string,
   children?: iPlaylist[]
 }

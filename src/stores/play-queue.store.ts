@@ -23,7 +23,7 @@ export const usePlayQueueStore = defineStore('playQueue', {
     nextFile() {
       let idx = this.queue.findIndex(f => f.uuid === this.playingFile?.uuid)
       if (idx === -1) return
-      idx = idx + 1 === this.queue.length ? 0 : idx++
+      idx = idx + 1 === this.queue.length ? 0 : ++idx
       this.playingFile = this.queue[idx]
     },
     prevFile() {

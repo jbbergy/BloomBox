@@ -1,15 +1,22 @@
 <template>
   <div
-    :class="['bb-tracklist-file', isPlaying && 'bb-tracklist-file--is-playing']"
+    :class="[
+      'bb-tracklist-file',
+      isPlaying && 'bb-tracklist-file--is-playing',
+      isSelected && 'bb-tracklist-file--is-selected'
+    ]"
     @click="onSelect"
+    @dblclick="onPlayFile"
   >
     <div class="bb-tracklist-file__playing">
       <inline-svg :src="IconPlay" aria-label="Lire ce titre" />
     </div>
     <div class="bb-tracklist-file__cover">
-      <img src="../../../assets/img/cover.jpg" />
+      <img :src="trackPicture" alt="Cover" />
     </div>
     <div class="bb-tracklist-file__title">
+      {{ file.artist ? file.artist + ' - ' : '' }}
+      {{ file.album ? file.album + ' - ' : '' }}
       {{ file.label }}
     </div>
     <div class="bb-tracklist-file__time">4:32</div>
@@ -18,13 +25,17 @@
 </template>
 
 <script lang="ts" setup>
-import { PropType } from 'vue';
+import { Buffer } from 'buffer'
+import PicturePlaceholder from '../../../assets/img/cover.jpg'
+import { PropType, computed } from 'vue';
 import { iFile } from 'src/services/interfaces/file.interface';
 import InlineSvg from 'vue-inline-svg';
 import IconPlay from '../../../assets/icons/i-play.svg';
 import { usePlayQueueStore } from '../../../stores/play-queue.store';
+import { usePlaylistsStore } from '../../../stores/playlists.store'
 
 const playQueueStore = usePlayQueueStore();
+const playlistsStore = usePlaylistsStore()
 
 const props = defineProps({
   file: {
@@ -35,11 +46,32 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  isSelected: {
+    type: Boolean,
+    default: false,
+  },
 });
+
+
+const trackPicture = computed(() => {
+  if (props.file?.picture?.data) {
+    let image = Buffer.from(props.file?.picture?.data).toString('base64')
+    return `data:${props.file?.picture?.format};base64,${image}`
+  } else {
+    return PicturePlaceholder
+  }
+
+})
 
 const onSelect = () => {
   playQueueStore.selectedFile = props.file;
 };
+
+const onPlayFile = () => {
+  if (!playQueueStore.selectedFile) return
+  playQueueStore.playingFile = playQueueStore.selectedFile
+  playQueueStore.addToQueue(playlistsStore.selectedPlaylist?.files)
+}
 </script>
 
 <style lang="scss">
@@ -51,6 +83,8 @@ const onSelect = () => {
   height: 3rem;
   align-items: center;
   column-gap: $bb-spacing-regular;
+  user-select: none;
+  transition: all .25s ease;
 
   &__cover {
     display: flex;
@@ -72,9 +106,13 @@ const onSelect = () => {
     }
   }
 
-  &:hover,
-  &--is-playing {
+  &--is-selected,
+  &:hover {
     background-color: $bb-bg-color-1;
+  }
+
+  &--is-playing {
+    color: $bb-color-Feijoa;
 
     #{$self}__playing {
       svg {

@@ -15,7 +15,7 @@ export const usePlayerStore = defineStore('player', {
         this.currentInstance.play()
       }
     },
-    play(filePath: string) {
+    play(filePath: string, callback: any) {
       if (this.currentInstance) {
         this.currentInstance.stop()
         this.currentInstance.destroy()
@@ -23,6 +23,9 @@ export const usePlayerStore = defineStore('player', {
       this.currentInstance = new AudioService(filePath)
       this.currentInstance.setVolume(this.defaultVolume)
       this.currentInstance.play()
+      this.currentInstance?.getInstance().on('end', function () {
+        callback()
+      })
     },
   },/* It's closing the `defineStore` function. */
 });

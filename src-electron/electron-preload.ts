@@ -27,3 +27,11 @@
  *   }
  * }
  */
+import { contextBridge, ipcRenderer } from 'electron'
+
+contextBridge.exposeInMainWorld(
+  'metadataApi',
+  {
+    readMetadata: async (file: string) => await ipcRenderer.invoke('metadataApi:readMetadata', file),
+  }
+)

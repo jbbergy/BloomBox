@@ -1,8 +1,10 @@
+import { iMetadata } from '../services/interfaces/file.interface';
 import { v4 as uuid } from 'uuid'
 import { defineStore } from 'pinia';
 import { iPlaylist } from '../services/interfaces/playlist.interface'
 import { iFile } from '../services/interfaces/file.interface'
 import { usePlaylistsService } from '../services/playlists/playlists.service'
+import { readMetadata } from '../services/metadata/metadata.service'
 
 const playlistService = new usePlaylistsService()
 
@@ -11,19 +13,6 @@ export const usePlaylistsStore = defineStore('playlists', {
     playlists: [] as iPlaylist[] | null,
     selectedPlaylist: null as iPlaylist | null,
   }),
-  getters: {
-    getPlaylists: (state) => state.playlists?.map(p => {
-      const val: iPlaylist = {
-        uuid: p.uuid,
-        label: p.label,
-        img: p.img,
-        files: p.files,
-        children: p.children,
-        key: p.key
-      }
-      return val
-    }),
-  },
   actions: {
     async init() {
       try {
@@ -35,7 +24,6 @@ export const usePlaylistsStore = defineStore('playlists', {
     async create(playlist: iPlaylist) {
       if (!this.playlists) return
 
-      this.playlists.push(playlist as never)
       try {
         await playlistService.create(playlist)
       } catch (error) {
@@ -50,6 +38,7 @@ export const usePlaylistsStore = defineStore('playlists', {
       }
 
       if (!newPlaylist) return
+      else this.playlists.push(newPlaylist)
 
       try {
         const idx = this.playlists.findIndex(p => p.uuid === newPlaylist?.uuid)
@@ -68,22 +57,41 @@ export const usePlaylistsStore = defineStore('playlists', {
         console.error('ERROR playlist service delete : ', error)
       }
     },
+    async formatFile(fileToFormat: iFile) {
+      let metadata: iMetadata | null = null
+      try {
+        metadata = await readMetadata(fileToFormat.path)
+      } catch (error) {
+        console.error('readMetadata error', fileToFormat.label, error)
+        throw error
+      }
+
+      if (!metadata) return
+
+      const file: iFile = {
+        uuid: uuid(),
+        label: metadata?.tags?.title || fileToFormat.label,
+        path: fileToFormat.path,
+        img: '',
+        type: fileToFormat.type,
+        size: fileToFormat.size,
+        album: metadata?.tags?.album,
+        artist: metadata?.tags?.artist,
+        genre: metadata?.tags?.genre,
+      }
+
+      return file
+    },
     async addFilesToPlaylist(files: iFile[], playlist: iPlaylist) {
       if (files?.length <= 0) return
-      const formattedFiles = Array.from(files).map(f => {
-        const file: iFile = {
-          uuid: uuid(),
-          label: f.label,
-          path: f.path,
-          img: '',
-          type: f.type,
-          size: f.size
-        }
-        return file
-      })
+      const formattedFiles = Array.from(files)
 
       const newPlaylist: iPlaylist = { ...playlist }
-      newPlaylist.files = formattedFiles
+      await Promise.all(formattedFiles.map(async (file) => {
+        if (!newPlaylist.files) newPlaylist.files = []
+        const result = await this.formatFile(file)
+        if (result) newPlaylist.files.push(result)
+      }))
 
       try {
         await playlistService.update(newPlaylist.key, newPlaylist)

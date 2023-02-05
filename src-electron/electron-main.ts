@@ -1,7 +1,14 @@
-import { app, BrowserWindow, nativeTheme } from 'electron';
+import { app, BrowserWindow, nativeTheme, ipcMain } from 'electron';
 import path from 'path';
 import os from 'os';
+import { readMetadata } from './metadata.service'
 
+
+const readMetadataHandler = () => {
+  ipcMain.handle('metadataApi:readMetadata', async (event, file) => {
+    return await readMetadata(file)
+  })
+}
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform();
 
@@ -14,6 +21,7 @@ try {
 } catch (_) { }
 
 let mainWindow: BrowserWindow | undefined;
+
 
 function createWindow() {
   /**
@@ -49,7 +57,10 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  readMetadataHandler()
+  createWindow()
+});
 
 app.on('window-all-closed', () => {
   if (platform !== 'darwin') {

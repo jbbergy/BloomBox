@@ -12,8 +12,10 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
+    "@types/jsmediatags": "^3.9.3",
     "howler": "^2.2.3",
     "idb": "^7.1.1",
+    "jsmediatags": "^3.9.7",
     "pinia": "^2.0.11",
     "quasar": "^2.6.0",
     "uuid": "^9.0.0",

@@ -1,3 +1,4 @@
+import { iPlaylist } from './../interfaces/playlist.interface';
 import { openDB, deleteDB } from 'idb'
 import { PLAYLIST_STORE_NAME, iBloomBoxDB } from '../interfaces/playlists-db.interface'
 
@@ -10,7 +11,11 @@ export class usePlaylistsService {
     this.dbPromise = openDB<iBloomBoxDB>(DATABASE_NAME, 1)
   }
 
-  async create(data: unknown) {
+  async create(data: iPlaylist) {
+    if (data?.files) {
+      data.files = JSON.stringify(data.files)
+    }
+
     try {
       const db = await this.dbPromise
       const tx = db.transaction(PLAYLIST_STORE_NAME, 'readwrite')
@@ -26,21 +31,38 @@ export class usePlaylistsService {
     const db = await this.dbPromise
     const tx = db.transaction(PLAYLIST_STORE_NAME, 'readonly')
     const store = tx.objectStore(PLAYLIST_STORE_NAME)
-    return store.get(key)
+    const playlist = await store.get(key)
+    if (playlist?.files) {
+      playlist.files = JSON.parse(playlist.files)
+    }
+
+    return playlist
   }
 
   async readAll() {
     const db = await this.dbPromise
     const tx = db.transaction(PLAYLIST_STORE_NAME, 'readonly')
     const store = tx.objectStore(PLAYLIST_STORE_NAME)
-    return store.getAll()
+    const playlists = await store.getAll()
+
+    return playlists?.map(p => {
+      if (p.files) {
+        p.files = JSON.parse(p.files)
+      }
+      return p
+    })
   }
 
-  async update(key: number, data: unknown) {
+  async update(key: number, data: iPlaylist) {
+    const playlist = { ...data }
+    if (playlist?.files && Array.isArray(playlist?.files)) {
+      playlist.files = JSON.stringify(playlist.files)
+    }
+
     const db = await this.dbPromise
     const tx = db.transaction(PLAYLIST_STORE_NAME, 'readwrite')
     const store = tx.objectStore(PLAYLIST_STORE_NAME)
-    store.put(data)
+    store.put(playlist)
     return tx.complete
   }
 
@@ -69,6 +91,12 @@ export class usePlaylistsService {
     const tx = db.transaction(PLAYLIST_STORE_NAME, 'readonly');
     const store = tx.objectStore(PLAYLIST_STORE_NAME);
     const items = await store.getAll();
-    return items.find(item => item.uuid === uuid);
+    const playlists = items.find(p => p.uuid === uuid);
+
+    if (playlists?.files) {
+      playlists.files = JSON.parse(playlists.files)
+    }
+
+    return playlists
   }
 }
