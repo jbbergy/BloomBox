@@ -16,7 +16,7 @@ export interface iFile {
   path: string
   type: string
   size: string
-  time?: string
+  time?: number
   album?: string
   artist?: string
   genre?: string

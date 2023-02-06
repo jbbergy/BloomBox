@@ -46,7 +46,9 @@
           <inline-svg :src="IconLoop" aria-label="Lecture en boucle" />
         </BBTransportButton>
       </div>
-      <div class="bb-player__seek"></div>
+      <div class="bb-player__seek">
+        <BBProgres />
+      </div>
     </div>
     <div class="bb-player__right"></div>
   </div>
@@ -66,7 +68,9 @@ import { iFile } from 'src/services/interfaces/file.interface';
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
 import { usePlayerStore } from '../../../stores/player.store'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
+import BBProgres from '../../molecules/bb-progress/bb-progress.vue'
 
+const seek = ref(30)
 const isPaused = ref(false)
 const isPlaying = ref(false)
 
