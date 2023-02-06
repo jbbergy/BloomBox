@@ -33,7 +33,7 @@
 <script lang="ts" setup>
 import { Buffer } from 'buffer';
 import PicturePlaceholder from '../../../assets/img/cover.jpg';
-import { PropType, computed, onMounted, ref } from 'vue';
+import { PropType, computed, onUnmounted, onMounted, ref } from 'vue';
 import { iFile } from 'src/services/interfaces/file.interface';
 import { readMetadata } from '../../../services/metadata/metadata.service';
 import InlineSvg from 'vue-inline-svg';
@@ -59,20 +59,20 @@ onMounted(async () => {
     pictureData.value = metadata.tags?.picture;
   }
 
-  // TODO: déplacer la gestion des images dans le store
-  // utiliser une hashmap ici n'a pas vraiment de sens
-  // je me demande d'ailleurs comment ça se fait que
-  // ça a réduit la consommationde mémoire
   if (pictureData?.value?.data) {
-    let result = savedPictures.value[props.file.album]
+    let result = playlistsStore.impageCache[props.file.album]
     if (!result) {
       let image = Buffer.from(pictureData.value.data).toString('base64')
       result = `data:${pictureData.value.format};base64,${image}`
-      savedPictures.value[props.file.album] = result
+      playlistsStore.impageCache[props.file.album] = result
     }
     trackPicture.value = result
   }
 });
+
+onUnmounted(() => {
+  playlistsStore.impageCache = {}
+})
 
 const props = defineProps({
   file: {

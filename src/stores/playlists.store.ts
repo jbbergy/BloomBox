@@ -11,6 +11,7 @@ let playlistService = null
 export const usePlaylistsStore = defineStore('playlists', {
   state: () => ({
     playlists: [] as iPlaylist[] | null,
+    impageCache: {},
     selectedPlaylist: null as iPlaylist | null,
   }),
   actions: {
