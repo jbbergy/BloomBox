@@ -70,9 +70,9 @@ onMounted(async () => {
   }
 });
 
-onUnmounted(() => {
-  playlistsStore.impageCache = {}
-})
+// onUnmounted(() => {
+//   playlistsStore.impageCache = {}
+// })
 
 const props = defineProps({
   file: {

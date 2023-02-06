@@ -49,6 +49,7 @@ defineProps({
     align-items: center;
     padding: 0;
     margin: 0;
+    transition: background-color 0.2s ease-in-out;
 
     &:hover {
       background-color: $bb-text-color-3;

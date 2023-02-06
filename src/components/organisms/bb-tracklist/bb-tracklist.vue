@@ -6,7 +6,7 @@
       <div>Titre</div>
       <div>Album</div>
       <div>Atriste</div>
-      <div></div>
+      <div>Durée</div>
       <div></div>
     </div>
     <template v-if="files && files.length > 0">

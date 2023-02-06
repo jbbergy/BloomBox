@@ -90,7 +90,8 @@ const onSeek = (event) => {
       width: 0.75rem;
       border-radius: 999px;
       transform: translateY(-0.25rem);
-      background-color: $bb-text-color-3;
+      background-color: $bb-scrollbar-thumb-bg;
+      transition: transform 0.2s ease-in-out;
     }
 
     &::-webkit-slider-runnable-track {
@@ -102,7 +103,8 @@ const onSeek = (event) => {
 
     &:hover {
       &::-webkit-slider-thumb {
-        background-color: $bb-scrollbar-thumb-bg;
+        background-color: $bb-text-color-3;
+        transform: scale(1.5) translateY(-25%);
       }
     }
   }
