@@ -137,6 +137,7 @@ const onPlayFile = () => {
 
     img {
       height: 2rem;
+      border-radius: $bb-border-radius-regular;
     }
   }
 

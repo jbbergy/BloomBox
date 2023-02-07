@@ -82,14 +82,12 @@ export const usePlaylistsStore = defineStore('playlists', {
         console.error('readMetadata error', fileToFormat.label, error)
         throw error
       }
-
-      if (!metadata) return
-
+      console.log('fileToFormat', fileToFormat)
+      console.log('label', metadata?.tags?.title || fileToFormat.name)
       const file: iFile = {
         uuid: uuid(),
-        label: metadata?.tags?.title || fileToFormat.label,
+        label: metadata?.tags?.title || fileToFormat.name,
         path: fileToFormat.path,
-        img: '',
         type: fileToFormat.type,
         size: fileToFormat.size,
         album: metadata?.tags?.album,

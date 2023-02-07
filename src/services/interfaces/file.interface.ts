@@ -20,4 +20,5 @@ export interface iFile {
   album?: string
   artist?: string
   genre?: string
+  name?: string
 }

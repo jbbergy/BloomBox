@@ -47,7 +47,7 @@
         </BBTransportButton>
       </div>
       <div class="bb-player__seek">
-        <BBProgres />
+        <BBProgress />
       </div>
     </div>
     <div class="bb-player__right"></div>
@@ -63,14 +63,14 @@ import IconPrev from '../../../assets/icons/i-step-backward.svg';
 import IconNext from '../../../assets/icons/i-step-forward.svg';
 import IconLoop from '../../../assets/icons/i-loop.svg';
 import IconShuffle from '../../../assets/icons/i-shuffle.svg';
+import ImgCover from '../../../assets/img/cover.jpg';
 import BBTransportButton from '../../../components/atoms/bb-transport-button/bb-transport-button.vue'
+import BBProgress from '../../molecules/bb-progress/bb-progress.vue'
 import { iFile } from 'src/services/interfaces/file.interface';
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
 import { usePlayerStore } from '../../../stores/player.store'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
-import BBProgres from '../../molecules/bb-progress/bb-progress.vue'
 
-const seek = ref(30)
 const isPaused = ref(false)
 const isPlaying = ref(false)
 
@@ -125,7 +125,7 @@ const isLoop = computed(() => {
 })
 
 const fileImage = computed(() => {
-  return playQueueStore.currentCover
+  return playQueueStore.currentCover || ImgCover
 })
 
 watch(playingFile, async (value: iFile) => {
@@ -167,7 +167,7 @@ watch(playingFile, async (value: iFile) => {
   }
 
   &__track-title {
-    width: 100%;
+    width: 12rem;
     font-weight: bold;
     font-size: $bb-font-size-regular;
     word-wrap: break-word;
@@ -175,7 +175,7 @@ watch(playingFile, async (value: iFile) => {
   }
 
   &__track-artist {
-    width: 100%;
+    width: 12rem;
     font-size: $bb-font-size-small;
     word-wrap: break-word;
     white-space: break-spaces;
