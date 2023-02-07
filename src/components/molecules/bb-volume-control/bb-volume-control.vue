@@ -1,14 +1,11 @@
 <template>
   <div class="bb-volume-control">
-    <button
-      class="bb-volume-control__button"
-      @click="isMute = !isMute"
-    >
+    <BBTransportButton @click="isMute = !isMute" no-bg>
       <inline-svg
         :src="soundIcon"
         aria-label="Activer/désactiver le son"
       />
-    </button>
+    </BBTransportButton>
     <input
       :value="volume"
       @input="onVolumeChange"
@@ -25,6 +22,7 @@
 <script lang="ts" setup>
 import InlineSvg from 'vue-inline-svg';
 import { computed, ref, watch } from 'vue'
+import BBTransportButton from '../../../components/atoms/bb-transport-button/bb-transport-button.vue'
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
 import { usePlayerStore } from '../../../stores/player.store'
 import IconSoundUp from '../../../assets/icons/i-sound-up.svg'

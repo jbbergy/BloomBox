@@ -4,6 +4,8 @@
     <input
       :value="progressBarValue"
       @input="onSeek"
+      @mousedown="updateValue = false"
+      @mouseup="updateValue = true"
       type="range"
       step="0.1"
       min="0"
@@ -16,12 +18,16 @@
 </template>
 
 <script lang="ts" setup>
-import {onMounted, ref, computed} from 'vue'
+import {onMounted, ref, computed, watch} from 'vue'
 import { usePlayerStore } from '../../../stores/player.store'
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
 
+const updateValue = ref(true)
 const seekIntervalId = ref<NodeJS.Timeout>()
 const seek = ref(0)
+const progressBarValue = ref(0)
+const doUpdateSeek = ref<number | null>(null)
+const seekValue = ref(0)
 
 const playerStore = usePlayerStore()
 const playQueueStore = usePlayQueueStore()
@@ -29,11 +35,31 @@ const playQueueStore = usePlayQueueStore()
 onMounted(() => {
   seekIntervalId.value = setInterval(() => {
     if (!playerStore.currentInstance) return;
-    seek.value = playerStore.currentInstance.getInstance()?.seek() || 0;
+    if (updateValue.value) {
+      seek.value = playerStore.currentInstance.getInstance()?.seek() || 0;
+    }
   }, 100);
 })
 
+watch(updateValue, (value) => {
+  if (!!doUpdateSeek.value) {
+    seekValue.value = playQueueStore?.playingFile?.time * (doUpdateSeek.value / 100)
+    playerStore.currentInstance?.seek(seekValue.value)
+    doUpdateSeek.value = null
+  }
+})
+
+watch(seek, (value) => {
+  if (value) {
+    updateProgressBarValue()
+  }
+})
+
 function getFileDuration(duration) {
+  if (!duration) return {
+    m: 0,
+    s: '00'
+  }
   const minuts = Math.floor(duration / 60);
   const seconds = Math.floor(duration % 60);
 
@@ -53,18 +79,16 @@ const elapsedTime = computed(() => {
 
 const isPlayingFile = computed(() => !!playQueueStore?.playingFile)
 
-const progressBarValue = computed(() => {
-  let result = 0;
+const updateProgressBarValue = () => {  let result = 0;
   const duration = playQueueStore?.playingFile?.time || 0
   if (duration > 0) {
-    result = (seek.value / duration) * 100;
+    const result = (seek.value / duration) * 100;
+    progressBarValue.value = result.toFixed(1)
   }
-  return result;
-})
+}
 
 const onSeek = (event) => {
-  playerStore.currentInstance?.seek(event.target.value)
-  seek.value = event.target.value
+  doUpdateSeek.value = event?.target?.value
 }
 
 </script>

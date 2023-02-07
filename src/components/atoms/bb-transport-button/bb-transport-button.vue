@@ -80,6 +80,7 @@ defineProps({
 
       svg {
         fill: $bb-text-color-4;
+        color: $bb-text-color-4;
       }
 
       &:hover {

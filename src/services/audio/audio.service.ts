@@ -48,6 +48,11 @@ export class AudioService {
     return this._isPlaying
   }
 
+  getDuration() {
+    if (!this._howlInstance) return
+    return this._howlInstance.duration()
+  }
+
   setVolume(volume = 0.3) {
     Howler.volume(volume);
   }
