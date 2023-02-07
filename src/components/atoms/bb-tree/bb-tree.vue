@@ -2,7 +2,7 @@
   <div class="bb-tree" @click="onClickItem($event)">
     <q-tree
       v-if="hasPlaylists"
-      :nodes="playlistsStore.playlists"
+      :nodes="playlistsStore.filteredPlaylists"
       node-key="uuid"
       no-connectors
       v-model:selected="selectedNode"

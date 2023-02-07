@@ -22,11 +22,11 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import BBTracklistFile from '../bb-tracklist-file/bb-tracklist-file.vue'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
-import { iFile } from 'src/services/interfaces/file.interface';
+import { iFile } from '../../../services/interfaces/file.interface';
 
 const playQueueStore = usePlayQueueStore()
 const playlistsStore = usePlaylistsStore()
@@ -39,12 +39,25 @@ const files = computed(() => {
   return null
 })
 
+const playingFile = computed(() => playQueueStore.playingFile)
+
+watch(playingFile, (value: iFile) => {
+  if (value) {
+    const element = document.querySelector(`[data-uuid="${value.uuid}"]`)
+    if (!element) return
+    element.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+    })
+  }
+})
+
 const isPlaying = (file: iFile) => {
-return file.uuid === playQueueStore.playingFile?.uuid
+  return file.uuid === playQueueStore.playingFile?.uuid
 }
 
 const isSelected = (file: iFile) => {
-return file.uuid === playQueueStore.selectedFile?.uuid
+  return file.uuid === playQueueStore.selectedFile?.uuid
 }
 </script>
 

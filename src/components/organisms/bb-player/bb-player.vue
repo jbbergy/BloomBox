@@ -50,7 +50,9 @@
         <BBProgress />
       </div>
     </div>
-    <div class="bb-player__right"></div>
+    <div class="bb-player__right">
+      <BBVolumeControl />
+    </div>
   </div>
 </template>
 
@@ -66,6 +68,7 @@ import IconShuffle from '../../../assets/icons/i-shuffle.svg';
 import ImgCover from '../../../assets/img/cover.jpg';
 import BBTransportButton from '../../../components/atoms/bb-transport-button/bb-transport-button.vue'
 import BBProgress from '../../molecules/bb-progress/bb-progress.vue'
+import BBVolumeControl from '../../../components/molecules/bb-volume-control/bb-volume-control.vue'
 import { iFile } from 'src/services/interfaces/file.interface';
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
 import { usePlayerStore } from '../../../stores/player.store'
@@ -154,6 +157,9 @@ watch(playingFile, async (value: iFile) => {
   &__right {
     height: 6rem;
     width: 16rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   &__left {

@@ -5,6 +5,7 @@
       isPlaying && 'bb-tracklist-file--is-playing',
       isSelected && 'bb-tracklist-file--is-selected',
     ]"
+    :data-uuid="file.uuid"
     @click="onSelect"
     @dblclick="onPlayFile"
   >
@@ -33,7 +34,7 @@
 <script lang="ts" setup>
 import { Buffer } from 'buffer';
 import PicturePlaceholder from '../../../assets/img/cover.jpg';
-import { PropType, computed, onUnmounted, onMounted, ref } from 'vue';
+import { PropType, computed /*, onUnmounted*/, onMounted, ref } from 'vue';
 import { iFile } from 'src/services/interfaces/file.interface';
 import { readMetadata } from '../../../services/metadata/metadata.service';
 import InlineSvg from 'vue-inline-svg';
@@ -44,29 +45,28 @@ import { usePlaylistsStore } from '../../../stores/playlists.store';
 const playQueueStore = usePlayQueueStore();
 const playlistsStore = usePlaylistsStore();
 const pictureData = ref(null);
-const savedPictures = ref({})
 const trackPicture = ref(null)
 
 onMounted(async () => {
   let metadata = null;
-  trackPicture.value = PicturePlaceholder
-  try {
-    metadata = await readMetadata(props.file.path);
-  } catch (error) {
-    console.error(error);
-  }
-  if (metadata) {
-    pictureData.value = metadata.tags?.picture;
-  }
+  let result = playlistsStore.impageCache[props.file.album]
+  trackPicture.value = result || PicturePlaceholder
+  if(!result) {
+    try {
+      metadata = await readMetadata(props.file.path);
+    } catch (error) {
+      console.error(error);
+    }
+    if (metadata) {
+      pictureData.value = metadata.tags?.picture;
+    }
 
-  if (pictureData?.value?.data) {
-    let result = playlistsStore.impageCache[props.file.album]
-    if (!result) {
+    if (pictureData?.value?.data) {
       let image = Buffer.from(pictureData.value.data).toString('base64')
       result = `data:${pictureData.value.format};base64,${image}`
       playlistsStore.impageCache[props.file.album] = result
+      trackPicture.value = result
     }
-    trackPicture.value = result
   }
 });
 

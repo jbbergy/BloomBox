@@ -8,7 +8,10 @@
         aria-label="Retourner sur la page d'accueil"
       />
     </BBButton>
-    <BBInput placeholder="Rechercher" />
+    <BBInput
+      v-model="playlistsStore.filter"
+      placeholder="Rechercher"
+    />
     <BBButton>
       <inline-svg
         :src="IconSort"
@@ -19,13 +22,16 @@
 </template>
 
 <script lang="ts" setup>
+import { ref } from 'vue'
 import InlineSvg from 'vue-inline-svg'
 import BBButton from '../../atoms/bb-button/bb-button.vue'
 import BBInput from '../../atoms/bb-input/bb-input.vue'
 import IconHome from '../../../assets/icons/i-home.svg'
 import IconSort from '../../../assets/icons/i-sort.svg'
 import { useRouter } from 'vue-router';
+import { usePlaylistsStore } from '../../../stores/playlists.store'
 
+const playlistsStore = usePlaylistsStore()
 const router = useRouter();
 
 const goHome = () => {

@@ -11,9 +11,20 @@ let playlistService = null
 export const usePlaylistsStore = defineStore('playlists', {
   state: () => ({
     playlists: [] as iPlaylist[] | null,
+    filter: null,
     impageCache: {},
     selectedPlaylist: null as iPlaylist | null,
   }),
+  getters: {
+    filteredPlaylists: (state) => {
+      console.log('filteredPlaylists')
+      let result: iPlaylist[] | null = state.playlists
+      if (state.filter) {
+        result = state.playlists?.filter(p => p.label.toLowerCase().indexOf(state.filter.toLowerCase()) > -1)
+      }
+      return result
+    }
+  },
   actions: {
     async init() {
       if (!playlistService) {

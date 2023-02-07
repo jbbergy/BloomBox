@@ -27,5 +27,16 @@ export const usePlayerStore = defineStore('player', {
         callback()
       })
     },
-  },/* It's closing the `defineStore` function. */
+  },
+  persist: {
+    enabled: true,
+    strategies: [
+      {
+        key: 'player-store',
+        paths: [
+          'defaultVolume'
+        ]
+      }
+    ],
+  },
 });
