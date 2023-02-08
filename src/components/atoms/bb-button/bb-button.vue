@@ -1,10 +1,22 @@
 <template>
   <div class="bb-button">
-    <button class="bb-button__element">
+    <button :class="[
+    'bb-button__element',
+    noBg && 'bb-button__element--no-bg',
+    ]">
       <slot />
     </button>
   </div>
 </template>
+
+<script lang="ts" setup>
+defineProps({
+  noBg: {
+    type: Boolean,
+    default: false
+  }
+})
+</script>
 
 <style lang="scss">
 .bb-button {
@@ -28,6 +40,10 @@
 
     &:focus {
       border: 1px solid $bb-element-outline-accent;
+    }
+
+    &--no-bg {
+      background-color: transparent;
     }
   }
 }

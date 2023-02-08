@@ -32,8 +32,7 @@ const playQueueStore = usePlayQueueStore()
 const playlistsStore = usePlaylistsStore()
 
 const files = computed(() => {
-  if (!playlistsStore.selectedPlaylist) return
-  if (playlistsStore.selectedPlaylist?.files?.length > 0) {
+  if ((playlistsStore?.selectedPlaylist?.files?.length || -1) > 0) {
     return playlistsStore.selectedPlaylist?.files
   }
   return null

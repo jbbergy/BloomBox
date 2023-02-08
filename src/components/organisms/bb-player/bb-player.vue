@@ -133,6 +133,7 @@ const fileImage = computed(() => {
 
 watch(playingFile, async (value: iFile) => {
   if (value) {
+    playlistsStore.currentPlaylist = playlistsStore.selectedPlaylist
     playerStore.play(value.path, () => {
       onNextFile()
     })

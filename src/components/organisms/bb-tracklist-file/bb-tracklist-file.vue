@@ -158,7 +158,7 @@ const onPlayFile = () => {
   }
 
   &--is-playing {
-    color: $bb-color-Feijoa;
+    color: $bb-text-color-3;
 
     #{$self}__playing {
       svg {

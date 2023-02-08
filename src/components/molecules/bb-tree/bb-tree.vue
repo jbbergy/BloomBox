@@ -1,0 +1,148 @@
+<template>
+  <div
+      v-if="hasPlayists"
+      class="bb-tree"
+  >
+    <div
+      v-for="playlist in playlistsStore.playlists"
+      :key="playlist.uuid"
+      :class="[
+        'bb-tree__item',
+        currentPlaylistId === playlist.uuid && 'bb-tree__item--selected'
+      ]"
+      @click="onSelectNode(playlist)"
+      @keypress.space="onSelectNode(playlist)"
+      @keypress.enter="onSelectNode(playlist)"
+      tabindex="0"
+    >
+      <div class="bb-tree__img">
+        <img :src="playlist.img"/>
+      </div>
+      <div class="bb-tree__label">
+        {{ playlist.label }}
+      </div>
+      <div class="bb-tree__actions">
+        <template v-if="currentPlaylistId === playlist.uuid">
+          <BBButton @click="onDeletePlaylist(playlist.uuid)" no-bg>
+            <inline-svg :src="IconTrash" aria-label="Supprimer la playlist" />
+          </BBButton>
+        </template>
+      </div>
+    </div>
+  </div>
+</template>
+<script lang="ts" setup>
+import { computed, onBeforeMount,onMounted, watch, ref } from 'vue'
+import InlineSvg from 'vue-inline-svg';
+import BBButton from '../../atoms/bb-button/bb-button.vue'
+import IconTrash from '../../../assets/icons/i-trash.svg'
+import { usePlaylistsStore } from '../../../stores/playlists.store'
+import { usePlaylistsService } from '../../../services/playlists/playlists.service'
+import { useRouter } from 'vue-router';
+import { iPlaylist } from 'src/services/interfaces/playlist.interface';
+
+const selectedNode = ref<iPlaylist>();
+
+const router = useRouter();
+const playlistsStore = usePlaylistsStore()
+const playlistsService = new usePlaylistsService()
+
+watch(selectedNode, (node: iPlaylist) => {
+  if (!node || !playlistsStore.playlists) return
+  const playlist: iPlaylist | null = playlistsStore.playlists.find((p) => p.uuid === node.uuid) || null
+  playlistsStore.selectedPlaylist = playlist
+  router.push({ name: 'tracklist' })
+})
+
+const hasPlayists = computed(() => {
+  if (playlistsStore.filteredPlaylists) {
+    return playlistsStore.filteredPlaylists?.length > 0
+  }
+  return null
+})
+
+const currentPlaylistId = computed(() => playlistsStore.currentPlaylist?.uuid)
+
+const onSelectNode = (playlist: iPlaylist) => {
+  selectedNode.value = playlist
+}
+
+const onDeletePlaylist = async (playlistId: string) => {
+  if (!playlistId) return
+  if (!confirm('Vous allez supprimer la playlist, on y va ?')) return
+  let foundItem: unknown = null
+  try {
+    foundItem = await playlistsService.findByUUID(playlistId)
+  } catch (error) {
+    console.error(error);
+  }
+
+  if (!foundItem) return;
+
+  try {
+    await playlistsService.delete(foundItem.key);
+    await playlistsStore.init();
+    router.push({ name: 'home' });
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+onBeforeMount(async () => {
+  try {
+    await playlistsService.init();
+  } catch (error) {
+    console.error(error);
+  }
+})
+onMounted(async () => {
+  try {
+    await playlistsStore.init();
+  } catch (error) {
+    console.error(error);
+  }
+});
+
+</script>
+
+<style lang="scss">
+.bb-tree {
+  padding-top: $bb-spacing-small;
+
+  &__item {
+    display: grid;
+    grid-template-columns: 4rem auto 3rem;
+    padding: $bb-spacing-small;
+    align-items: center;
+    column-gap: $bb-spacing-small;
+    cursor: default;
+    outline: none;
+
+    &:focus,
+    &:hover {
+      background-color: $bb-bg-color-1;
+    }
+
+    &--selected {
+      color: $bb-text-color-3;
+    }
+  }
+
+  &__img {
+    height: 3rem;
+    img {
+      height: 100%;
+      border-radius: $bb-border-radius-regular;
+    }
+  }
+
+  &__actions {
+
+    svg {
+      height: 100%;
+      color: $bb-text-color-1;
+      fill: $bb-text-color-1;
+    }
+  }
+}
+</style>
