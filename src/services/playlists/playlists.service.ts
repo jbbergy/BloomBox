@@ -4,7 +4,7 @@ import { PLAYLIST_STORE_NAME, iBloomBoxDB } from '../interfaces/playlists-db.int
 
 const DATABASE_NAME = 'BBdb'
 
-export class usePlaylistsService {
+export class PlaylistsService {
   private dbPromise: Promise<IDBDatabase<iBloomBoxDB>>
 
   async init() {

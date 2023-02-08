@@ -55,7 +55,6 @@ watch(volume, (value) => {
 
 const onVolumeChange = (event) => {
   const newVolume = event?.target?.value || 0
-  console.log('onVolumeChange', newVolume)
   if (playerStore.currentInstance) {
     playerStore.defaultVolume = newVolume
   }

@@ -1,12 +1,41 @@
 import { iMetadata } from '../services/interfaces/file.interface';
+import { Buffer } from 'buffer';
 import { v4 as uuid } from 'uuid'
+import dayjs from 'dayjs'
 import { defineStore } from 'pinia';
 import { iPlaylist } from '../services/interfaces/playlist.interface'
 import { iFile } from '../services/interfaces/file.interface'
-import { usePlaylistsService } from '../services/playlists/playlists.service'
+import { PlaylistsService } from '../services/playlists/playlists.service'
 import { readMetadata } from '../services/metadata/metadata.service'
+import { CacheImageService } from '../services/cache/images.cache.service'
 
 let playlistService = null
+const cacheImageService = new CacheImageService()
+
+const isOlderThanHours = (date: dayjs.Dayjs, hours = 24) => {
+  const currentDate = dayjs()
+  const difference = currentDate.diff(date, 'hours')
+  return difference >= hours
+}
+
+const getCoverBase64 = async (filePath: string) => {
+  let metadata: iMetadata | null = null
+  try {
+    metadata = await readMetadata(filePath);
+  } catch (error) {
+    console.error(error);
+  }
+
+  if (!metadata) return null
+
+  const pictureData = metadata?.tags?.picture
+
+  if (pictureData?.data) {
+    const image = Buffer.from(pictureData?.data).toString('base64')
+    return `data:${pictureData?.format};base64,${image}`
+  }
+  return null
+}
 
 export const usePlaylistsStore = defineStore('playlists', {
   state: () => ({
@@ -15,6 +44,8 @@ export const usePlaylistsStore = defineStore('playlists', {
     impageCache: {},
     selectedPlaylist: null as iPlaylist | null,
     currentPlaylist: null as iPlaylist | null,
+    needCacheUpdate: false,
+    refreshCovers: false,
   }),
   getters: {
     filteredPlaylists: (state) => {
@@ -27,19 +58,51 @@ export const usePlaylistsStore = defineStore('playlists', {
   },
   actions: {
     async init() {
+      this.needCacheUpdate = false
+
       if (!playlistService) {
-        playlistService = new usePlaylistsService()
+        playlistService = new PlaylistsService()
         await playlistService.init()
       }
+
+      const lastUpdateDate = cacheImageService.getLastUpdate()
+      if (!lastUpdateDate || (lastUpdateDate && isOlderThanHours(lastUpdateDate))) {
+        this.needCacheUpdate = true
+      }
+
       try {
         this.playlists = await playlistService.readAll()
       } catch (error) {
         console.error('ERROR playlist service init : ', error)
       }
+
+      if (this.needCacheUpdate) {
+        await this.refreshCache()
+      }
+
+    },
+    async refreshCache() {
+      if (this.playlists && this.playlists?.length > 0) {
+        await Promise.all(this.playlists.map(async p => {
+          if ((p.files?.length || -1) > 0 && Array.isArray(p.files)) {
+            await Promise.all(
+              p.files.map(async f => {
+                if (f.album && !cacheImageService.getFromCache(f.album)) {
+                  const img = await getCoverBase64(f.path)
+                  if (img) {
+                    cacheImageService.addToCache(f.album, img)
+                  }
+                }
+              })
+            )
+            this.needCacheUpdate = false
+          }
+        }))
+      }
     },
     async create(playlist: iPlaylist) {
       if (!playlistService) {
-        playlistService = new usePlaylistsService()
+        playlistService = new PlaylistsService()
         await playlistService.init()
       }
       if (!this.playlists) return
@@ -66,10 +129,11 @@ export const usePlaylistsStore = defineStore('playlists', {
       } catch (error) {
         console.error('ERROR playlist service create #2 : ', error)
       }
+      cacheImageService.setForceUpdate()
     },
     async delete(playlist: iPlaylist) {
       if (!playlistService) {
-        playlistService = new usePlaylistsService()
+        playlistService = new PlaylistsService()
         await playlistService.init()
       }
       if (!this.playlists) return
@@ -83,7 +147,7 @@ export const usePlaylistsStore = defineStore('playlists', {
     },
     async formatFile(fileToFormat: iFile) {
       if (!playlistService) {
-        playlistService = new usePlaylistsService()
+        playlistService = new PlaylistsService()
         await playlistService.init()
       }
       let metadata: iMetadata | null = null
@@ -91,10 +155,8 @@ export const usePlaylistsStore = defineStore('playlists', {
         metadata = await readMetadata(fileToFormat.path)
       } catch (error) {
         console.error('readMetadata error', fileToFormat.label, error)
-        throw error
       }
-      console.log('fileToFormat', fileToFormat)
-      console.log('label', metadata?.tags?.title || fileToFormat.name)
+
       const file: iFile = {
         uuid: uuid(),
         label: metadata?.tags?.title || fileToFormat.name,
@@ -110,7 +172,7 @@ export const usePlaylistsStore = defineStore('playlists', {
     },
     async addFilesToPlaylist(files: iFile[], playlist: iPlaylist) {
       if (!playlistService) {
-        playlistService = new usePlaylistsService()
+        playlistService = new PlaylistsService()
         await playlistService.init()
       }
       if (files?.length <= 0) return
@@ -158,6 +220,9 @@ export const usePlaylistsStore = defineStore('playlists', {
       } catch (error) {
         console.error('ERROR playlist service addFilesToPlaylist #2 : ', error)
       }
+      cacheImageService.setForceUpdate()
+      await this.refreshCache()
+      this.refreshCovers = true
     },
   },
 });

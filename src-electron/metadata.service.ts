@@ -7,6 +7,7 @@ export function readMetadata(file) {
         resolve(tag);
       },
       onError: (error) => {
+        console.error('SERVER readMetadata error', error)
         reject(error);
       },
     });

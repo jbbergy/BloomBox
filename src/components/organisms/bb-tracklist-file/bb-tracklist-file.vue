@@ -13,7 +13,7 @@
       <inline-svg :src="IconPlay" aria-label="Lire ce titre" />
     </div>
     <div class="bb-tracklist-file__cover">
-      <img :src="trackPicture" alt="Cover" />
+      <img v-if="geTrackPicture" :src="geTrackPicture" alt="Cover" />
     </div>
     <div class="bb-tracklist-file__title">
       {{ file.label }}
@@ -32,47 +32,27 @@
 </template>
 
 <script lang="ts" setup>
-import { Buffer } from 'buffer';
 import PicturePlaceholder from '../../../assets/img/cover.jpg';
-import { PropType, computed /*, onUnmounted*/, onMounted, ref } from 'vue';
+import { PropType, computed /*, onUnmounted*/, onBeforeMount, onMounted, ref, watch } from 'vue';
 import { iFile } from 'src/services/interfaces/file.interface';
-import { readMetadata } from '../../../services/metadata/metadata.service';
 import InlineSvg from 'vue-inline-svg';
 import IconPlay from '../../../assets/icons/i-play.svg';
 import { usePlayQueueStore } from '../../../stores/play-queue.store';
 import { usePlaylistsStore } from '../../../stores/playlists.store';
+import { CacheImageService } from '../../../services/cache/images.cache.service'
 
-const playQueueStore = usePlayQueueStore();
-const playlistsStore = usePlaylistsStore();
-const pictureData = ref(null);
-const trackPicture = ref(null)
+const cacheImageService = new CacheImageService()
+const playQueueStore = usePlayQueueStore()
+const playlistsStore = usePlaylistsStore()
+const trackPicture = ref<string | null>(PicturePlaceholder)
+
+onBeforeMount(() => {
+  trackPicture.value = PicturePlaceholder
+})
 
 onMounted(async () => {
-  let metadata = null;
-  let result = playlistsStore.impageCache[props.file.album]
-  trackPicture.value = result || PicturePlaceholder
-  if(!result) {
-    try {
-      metadata = await readMetadata(props.file.path);
-    } catch (error) {
-      console.error(error);
-    }
-    if (metadata) {
-      pictureData.value = metadata.tags?.picture;
-    }
-
-    if (pictureData?.value?.data) {
-      let image = Buffer.from(pictureData.value.data).toString('base64')
-      result = `data:${pictureData.value.format};base64,${image}`
-      playlistsStore.impageCache[props.file.album] = result
-      trackPicture.value = result
-    }
-  }
-});
-
-// onUnmounted(() => {
-//   playlistsStore.impageCache = {}
-// })
+  updatePicture()
+})
 
 const props = defineProps({
   file: {
@@ -89,6 +69,19 @@ const props = defineProps({
   },
 });
 
+const refreshCovers = computed(() => playlistsStore.refreshCovers)
+
+const geTrackPicture = computed(() => {
+  return trackPicture.value
+})
+
+watch(refreshCovers, (value) => {
+  if (value) {
+    updatePicture()
+    playlistsStore.refreshCovers = false
+  }
+})
+
 const trackTime = computed(() => {
   const time = getFileDuration(props.file.time)
   if (time) {
@@ -97,6 +90,15 @@ const trackTime = computed(() => {
     return '--:--'
   }
 })
+
+const updatePicture = () => {
+  let result: string | null = PicturePlaceholder
+  trackPicture.value = result
+  if (props.file.album) {
+    result = cacheImageService.getFromCache(props.file.album)
+  }
+  trackPicture.value = result
+}
 
 const getFileDuration = (duration) => {
   const minuts = Math.floor(duration / 60)

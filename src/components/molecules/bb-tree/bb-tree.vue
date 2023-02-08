@@ -37,7 +37,7 @@ import InlineSvg from 'vue-inline-svg';
 import BBButton from '../../atoms/bb-button/bb-button.vue'
 import IconTrash from '../../../assets/icons/i-trash.svg'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
-import { usePlaylistsService } from '../../../services/playlists/playlists.service'
+import { PlaylistsService } from '../../../services/playlists/playlists.service'
 import { useRouter } from 'vue-router';
 import { iPlaylist } from 'src/services/interfaces/playlist.interface';
 
@@ -45,7 +45,7 @@ const selectedNode = ref<iPlaylist>();
 
 const router = useRouter();
 const playlistsStore = usePlaylistsStore()
-const playlistsService = new usePlaylistsService()
+const playlistsService = new PlaylistsService()
 
 watch(selectedNode, (node: iPlaylist) => {
   if (!node || !playlistsStore.playlists) return

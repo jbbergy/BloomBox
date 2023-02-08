@@ -5,6 +5,6 @@ export function readMetadata(filePath: string): Promise<iMetadata> {
     const result = window['metadataApi']?.readMetadata(filePath)
     return result
   } catch (error) {
-    throw new Error(`service getMetadata error ${error}`);
+    throw new Error(`service readMetadata error ${error}`);
   }
 }
