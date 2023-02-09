@@ -41,7 +41,7 @@ onMounted(() => {
   }, 100);
 })
 
-watch(updateValue, (value) => {
+watch(updateValue, () => {
   if (!!doUpdateSeek.value) {
     seekValue.value = playQueueStore?.playingFile?.time * (doUpdateSeek.value / 100)
     playerStore.currentInstance?.seek(seekValue.value)
@@ -79,7 +79,7 @@ const elapsedTime = computed(() => {
 
 const isPlayingFile = computed(() => !!playQueueStore?.playingFile)
 
-const updateProgressBarValue = () => {  let result = 0;
+const updateProgressBarValue = () => {
   const duration = playQueueStore?.playingFile?.time || 0
   if (duration > 0) {
     const result = (seek.value / duration) * 100;

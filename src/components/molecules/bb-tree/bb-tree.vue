@@ -22,7 +22,7 @@
         {{ playlist.label }}
       </div>
       <div class="bb-tree__actions">
-        <template v-if="currentPlaylistId === playlist.uuid">
+        <template v-if="selectedNode?.uuid === playlist.uuid">
           <BBButton @click="onDeletePlaylist(playlist.uuid)" no-bg>
             <inline-svg :src="IconTrash" aria-label="Supprimer la playlist" />
           </BBButton>

@@ -12,8 +12,9 @@ import { usePlaylistsStore } from '../../../stores/playlists.store'
 
 const playlistsStore = usePlaylistsStore()
 const addTracks = () => {
-  let input = document.createElement('input');
-  input.type = 'file';
+  let input = document.createElement('input')
+  input.type = 'file'
+  input.accept = 'audio/mpeg,audio/x-wav,audio/ogg,audio/x-m4a,audio/aac,audio/flac'
   input.multiple = true
 
   input.onchange = e => {

@@ -22,7 +22,6 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
 import InlineSvg from 'vue-inline-svg'
 import BBButton from '../../atoms/bb-button/bb-button.vue'
 import BBInput from '../../atoms/bb-input/bb-input.vue'
