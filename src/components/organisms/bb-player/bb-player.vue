@@ -91,6 +91,7 @@ onMounted(() => {
     timeoutId.value = setTimeout(() => {
       if (event.keyCode === 32 || event.keyCode === 179) { // space / play/pause
         event.preventDefault()
+        event.stopImmediatePropagation()
         onPlayFile()
       } else if (event.keyCode === 176) {
         event.preventDefault()

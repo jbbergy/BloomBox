@@ -1,4 +1,4 @@
-import { app, BrowserWindow, nativeTheme, ipcMain } from 'electron';
+import { app, BrowserWindow, nativeTheme, ipcMain, Menu } from 'electron';
 import path from 'path';
 import os from 'os';
 import { readMetadata } from './metadata.service'
@@ -39,7 +39,7 @@ function createWindow() {
       preload: path.resolve(__dirname, process.env.QUASAR_ELECTRON_PRELOAD),
     },
   });
-
+  Menu.setApplicationMenu(null)
   mainWindow.autoHideMenuBar = true;
   mainWindow.loadURL(process.env.APP_URL);
 

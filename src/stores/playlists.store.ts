@@ -95,6 +95,10 @@ export const usePlaylistsStore = defineStore('playlists', {
                 }
               })
             )
+            if (p.files.length > 0 && p.files[0].album) {
+              const img = cacheImageService.getFromCache(p.files[0].album)
+              if (img) p.img = img
+            }
             this.needCacheUpdate = false
           }
         }))

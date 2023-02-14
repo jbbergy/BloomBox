@@ -11,7 +11,7 @@ export class CacheImageService {
     }
   }
 
-  getFromCache(key: string) {
+  getFromCache(key: string): string | null {
     return localStorage.getItem(key)
   }
 
