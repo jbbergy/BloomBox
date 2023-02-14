@@ -8,6 +8,7 @@
         :src="IconPlus"
         aria-label="Créer une playlist"
       />
+      Créer un playlist
     </BBButton>
     <div
       v-if="isCreateModalOpen"
@@ -103,20 +104,15 @@ function createPlaylist() {
 
   &__btn {
 
-    &--add {
-      svg {
-        height: 100%;
-        fill: $bb-color-lynch;
-      }
-    }
-
     &--confirm {
+      filter: saturate(0.5);
       svg {
         fill: $positive;
       }
     }
 
     &--abort {
+      filter: saturate(0.5);
       svg {
         fill: $negative;
       }

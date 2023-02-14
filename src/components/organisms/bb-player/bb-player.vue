@@ -57,7 +57,7 @@
 </template>
 
 <script lang="ts" setup>
-import { watch, computed, ref } from 'vue'
+import { watch, computed, ref, onMounted } from 'vue'
 import InlineSvg from 'vue-inline-svg';
 import IconPlay from '../../../assets/icons/i-play.svg';
 import IconPause from '../../../assets/icons/i-pause.svg';
@@ -76,10 +76,48 @@ import { usePlaylistsStore } from '../../../stores/playlists.store'
 
 const isPaused = ref(false)
 const isPlaying = ref(false)
+const timeoutId = ref<NodeJS.Timeout>(null)
+const volumeBackup = ref(0)
+const isMute = ref(false)
 
 const playQueueStore = usePlayQueueStore()
 const playerStore = usePlayerStore()
 const playlistsStore = usePlaylistsStore()
+
+onMounted(() => {
+  document.addEventListener('keydown', (event: Event) => {
+    if (timeoutId.value) clearTimeout(timeoutId.value)
+
+    timeoutId.value = setTimeout(() => {
+      if (event.keyCode === 32 || event.keyCode === 179) { // space / play/pause
+        event.preventDefault()
+        onPlayFile()
+      } else if (event.keyCode === 176) {
+        event.preventDefault()
+        onNextFile()
+      } else if (event.keyCode === 177) {
+        event.preventDefault()
+        onPrevFile()
+      } else if (event.keyCode === 178) {
+        event.stopImmediatePropagation()
+        event.preventDefault()
+        if (!isMute.value) {
+          volumeBackup.value = playerStore?.defaultVolume
+          playerStore.defaultVolume = 0
+          playerStore.currentInstance?.setVolume(playerStore.defaultVolume)
+          isMute.value = true
+          console.log('true playerStore.defaultVolume', playerStore.defaultVolume)
+        } else {
+          playerStore.defaultVolume = volumeBackup.value || 0
+          playerStore.currentInstance?.setVolume(playerStore.defaultVolume)
+          isMute.value = false
+          console.log('false playerStore.defaultVolume', playerStore.defaultVolume)
+        }
+      }
+      clearTimeout(timeoutId.value)
+    }, 1)
+  })
+})
 
 const onPlayFile = () => {
   if (!playQueueStore.selectedFile) return

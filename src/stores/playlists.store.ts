@@ -9,7 +9,7 @@ import { PlaylistsService } from '../services/playlists/playlists.service'
 import { readMetadata } from '../services/metadata/metadata.service'
 import { CacheImageService } from '../services/cache/images.cache.service'
 
-let playlistService = null
+let playlistService: PlaylistsService | null = null
 const cacheImageService = new CacheImageService()
 
 const isOlderThanHours = (date: dayjs.Dayjs, hours = 24) => {
@@ -145,6 +145,27 @@ export const usePlaylistsStore = defineStore('playlists', {
         console.error('ERROR playlist service delete : ', error)
       }
     },
+    async deleteFile(filetoDelete: iFile) {
+      if (!playlistService) {
+        playlistService = new PlaylistsService()
+        await playlistService.init()
+      }
+      let idxTodelete = null
+      if (
+        this.selectedPlaylist
+        && this.selectedPlaylist.files
+        && Array.isArray(this.selectedPlaylist.files)
+        && this.selectedPlaylist.key
+      ) {
+        idxTodelete = this.selectedPlaylist.files.findIndex(f => f.uuid === filetoDelete.uuid)
+        if (idxTodelete > -1) {
+          this.selectedPlaylist.files.splice(idxTodelete, 1)
+          playlistService.update(this.selectedPlaylist.key, this.selectedPlaylist)
+        }
+        cacheImageService.setForceUpdate()
+        await this.refreshCache()
+      }
+    },
     async formatFile(fileToFormat: iFile) {
       if (!playlistService) {
         playlistService = new PlaylistsService()
@@ -171,6 +192,7 @@ export const usePlaylistsStore = defineStore('playlists', {
       return file
     },
     async addFilesToPlaylist(files: iFile[], playlist: iPlaylist) {
+      this.refreshCovers = false
       if (!playlistService) {
         playlistService = new PlaylistsService()
         await playlistService.init()

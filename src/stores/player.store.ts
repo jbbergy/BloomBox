@@ -15,7 +15,7 @@ export const usePlayerStore = defineStore('player', {
         this.currentInstance.play()
       }
     },
-    play(filePath: string, callback: any) {
+    play(filePath: string, callback: unknown) {
       if (this.currentInstance) {
         this.currentInstance.stop()
         this.currentInstance.destroy()

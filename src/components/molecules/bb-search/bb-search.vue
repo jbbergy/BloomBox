@@ -12,7 +12,7 @@
       v-model="playlistsStore.filter"
       placeholder="Rechercher"
     />
-    <BBButton>
+    <BBButton v-if="false">
       <inline-svg
         :src="IconSort"
         aria-label="Changer l'order des playlists"

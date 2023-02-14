@@ -1,13 +1,19 @@
 <template>
   <div class="bb-tracklist-actions">
     <BBButton @click="addTracks">
+      <inline-svg
+        :src="IconPlus"
+        aria-label="Créer une playlist"
+      />
       Ajouter des titres
     </BBButton>
   </div>
 </template>
 
 <script lang="ts" setup>
+import InlineSvg from 'vue-inline-svg'
 import BBButton from '../../atoms/bb-button/bb-button.vue'
+import IconPlus from '../../../assets/icons/i-plus.svg'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
 
 const playlistsStore = usePlaylistsStore()

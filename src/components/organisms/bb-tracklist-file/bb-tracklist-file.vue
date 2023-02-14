@@ -6,8 +6,12 @@
       isSelected && 'bb-tracklist-file--is-selected',
     ]"
     :data-uuid="file.uuid"
-    @click="onSelect"
+    @click="onSelect(false)"
     @dblclick="onPlayFile"
+    @keydown.enter.prevent="onSelect(true)"
+    @keydown.space.prevent="onSelect(false)"
+    @keydown.delete.prevent="onDelete"
+    tabindex="0"
   >
     <div class="bb-tracklist-file__playing">
       <inline-svg :src="IconPlay" aria-label="Lire ce titre" />
@@ -27,7 +31,7 @@
     <div class="bb-tracklist-file__time">
       {{ trackTime }}
     </div>
-    <div class="bb-tracklist-file__actions">actions</div>
+    <div class="bb-tracklist-file__actions"></div>
   </div>
 </template>
 
@@ -78,7 +82,6 @@ const geTrackPicture = computed(() => {
 watch(refreshCovers, (value) => {
   if (value) {
     updatePicture()
-    playlistsStore.refreshCovers = false
   }
 })
 
@@ -92,12 +95,7 @@ const trackTime = computed(() => {
 })
 
 const updatePicture = () => {
-  let result: string | null = PicturePlaceholder
-  trackPicture.value = result
-  if (props.file.album) {
-    result = cacheImageService.getFromCache(props.file.album)
-  }
-  trackPicture.value = result
+  trackPicture.value = cacheImageService.getFromCache(props?.file?.album || '') || PicturePlaceholder
 }
 
 const getFileDuration = (duration) => {
@@ -110,9 +108,18 @@ const getFileDuration = (duration) => {
   }
 }
 
-const onSelect = () => {
-  playQueueStore.selectedFile = props.file;
-};
+const onSelect = (play: boolean) => {
+  playQueueStore.selectedFile = props.file
+  if (play) {
+    onPlayFile()
+  }
+}
+
+const onDelete = async () => {
+  if (!playQueueStore.selectedFile) return
+  if (!confirm(`Vous allez supprimer ${props.file.label}, on y va ?`)) return
+  await playlistsStore.deleteFile(props.file)
+}
 
 const onPlayFile = () => {
   if (!playQueueStore.selectedFile) return;
@@ -132,6 +139,7 @@ const onPlayFile = () => {
   column-gap: $bb-spacing-regular;
   user-select: none;
   font-size: $bb-font-size-regular;
+  outline: none;
 
   &__cover {
     display: flex;
@@ -155,6 +163,7 @@ const onPlayFile = () => {
   }
 
   &--is-selected,
+  &:focus,
   &:hover {
     background-color: $bb-bg-color-1;
   }

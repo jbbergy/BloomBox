@@ -65,11 +65,15 @@ export class PlaylistsService {
       playlist.files = JSON.stringify(playlist.files)
     }
 
-    const db = await this.dbPromise
-    const tx = db.transaction(PLAYLIST_STORE_NAME, 'readwrite')
-    const store = tx.objectStore(PLAYLIST_STORE_NAME)
-    store.put(playlist)
-    return tx.complete
+    try {
+      const db = await this.dbPromise
+      const tx = db.transaction(PLAYLIST_STORE_NAME, 'readwrite')
+      const store = tx.objectStore(PLAYLIST_STORE_NAME)
+      store.put(playlist)
+      return tx.complete
+    } catch (error) {
+      throw error
+    }
   }
 
   async delete(key: string) {

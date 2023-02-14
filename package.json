@@ -5,6 +5,11 @@
   "productName": "bloombox",
   "author": "Jean-Baptiste BERGY <jb.bergy@gmail.com>",
   "private": true,
+  "media": {
+    "playPause": "MediaPlayPause",
+    "nextTrack": "MediaNextTrack",
+    "prevTrack": "MediaPrevTrack"
+  },
   "scripts": {
     "dev": "quasar dev -m electron",
     "dev:tool": "quasar dev -m electron --devtools",

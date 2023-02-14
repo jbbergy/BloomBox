@@ -30,9 +30,11 @@ defineProps({
     border-radius: $bb-border-radius-regular;
     color: $bb-text-color-1;
     display: flex;
+    column-gap: $bb-spacing-small;
     justify-content: center;
     align-items: center;
     outline: none;
+    font-size: $bb-font-size-regular;
 
     &:hover {
       background-color: lighten($bb-bg-color-1, $bb-lighten-light);
@@ -44,6 +46,11 @@ defineProps({
 
     &--no-bg {
       background-color: transparent;
+    }
+
+    svg {
+      height: 100%;
+      fill: $bb-color-lynch;
     }
   }
 }

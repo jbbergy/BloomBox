@@ -61,7 +61,7 @@ const onPressEnter = () => {
     border:0;
     border-radius: $bb-border-radius-regular;
     color: $bb-text-color-1;
-    font-size: $bb-font-size-large;
+    font-size: $bb-font-size-regular;
     line-height: $bb-font-size-large;
     outline: none;
 

@@ -4,13 +4,14 @@
       class="bb-tree"
   >
     <div
-      v-for="playlist in playlistsStore.playlists"
+      v-for="playlist in playlistsStore.filteredPlaylists"
       :key="playlist.uuid"
       :class="[
         'bb-tree__item',
         currentPlaylistId === playlist.uuid && 'bb-tree__item--selected'
       ]"
       @click="onSelectNode(playlist)"
+      @dblclick="onSelectNode(playlist, true)"
       @keypress.space="onSelectNode(playlist)"
       @keypress.enter="onSelectNode(playlist)"
       tabindex="0"
@@ -37,14 +38,17 @@ import InlineSvg from 'vue-inline-svg';
 import BBButton from '../../atoms/bb-button/bb-button.vue'
 import IconTrash from '../../../assets/icons/i-trash.svg'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
+import { usePlayQueueStore } from '../../../stores/play-queue.store'
 import { PlaylistsService } from '../../../services/playlists/playlists.service'
 import { useRouter } from 'vue-router';
-import { iPlaylist } from 'src/services/interfaces/playlist.interface';
-
+import { iPlaylist } from '../../../services/interfaces/playlist.interface';
+import { iFile } from '../../../services/interfaces/file.interface';
+import { getRandomValue } from '../../../utils/random'
 const selectedNode = ref<iPlaylist>();
 
 const router = useRouter();
 const playlistsStore = usePlaylistsStore()
+const playQueueStore = usePlayQueueStore()
 const playlistsService = new PlaylistsService()
 
 watch(selectedNode, (node: iPlaylist) => {
@@ -63,8 +67,15 @@ const hasPlayists = computed(() => {
 
 const currentPlaylistId = computed(() => playlistsStore.currentPlaylist?.uuid)
 
-const onSelectNode = (playlist: iPlaylist) => {
+const onSelectNode = (playlist: iPlaylist, play = false) => {
   selectedNode.value = playlist
+  if (play && playlist.files) {
+    let idx = 0
+    if (playQueueStore.shuffle) idx = getRandomValue(0, playlist.files.length - 1)
+    playQueueStore.selectedFile = playlist.files[idx] as iFile
+    playQueueStore.playingFile = playQueueStore.selectedFile
+    playQueueStore.addToQueue(playlistsStore.selectedPlaylist?.files)
+  }
 }
 
 const onDeletePlaylist = async (playlistId: string) => {

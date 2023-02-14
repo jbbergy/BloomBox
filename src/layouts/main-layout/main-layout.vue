@@ -3,19 +3,7 @@
   <div v-if="showDebug" class="data-debug">
     <button @click="showDebug = false">Close</button>
     <pre>
-      playQueueStore<br>
-      playQueueStore.queue : {{ playQueueStore.queue?.length }}<br>
-      playQueueStore.selectedFile : {{ playQueueStore.selectedFile?.label }}<br>
-      playQueueStore.playingFile :{{ playQueueStore.playingFile?.label }}<br>
-      <br>
-      playlistsStore<br>
-      playlistsStore.playlists : {{ playlistsStore.playlists?.length }}<br>
-      <!-- playlistsStore.playlists : {{ playlistsStore.playlists }}<br> -->
-      playlistsStore.selectedPlaylist : {{ playlistsStore.selectedPlaylist?.label }}<br>
-      <br>
-      playerStore<br>
-      playerStore.currentInstance : {{ !!playerStore.currentInstance }}<br>
-      playerStore.defaultVolume : {{ playerStore.defaultVolume }}<br>
+      {{ playlistsStore.playlists?.find(p => p.label === 'Corc') }}<br>
       <br>
     </pre>
   </div>
@@ -29,7 +17,7 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" side="left">
+    <q-drawer v-model="leftDrawerOpen" side="left" class="custom-scrollbar">
       <BBSidebar />
     </q-drawer>
 
@@ -49,21 +37,22 @@
 </template>
 
 <script lang="ts" setup>
-import { usePlayQueueStore } from '../../stores/play-queue.store';
 import { usePlaylistsStore } from '../../stores/playlists.store';
-import { usePlayerStore } from '../../stores/player.store';
 
 import BBHeader from '../../components/organisms/bb-header/bb-header.vue'
 import BBSidebar from '../../components/organisms/bb-sidebar/bb-sidebar.vue'
 import BBPlayer from '../../components/organisms/bb-player/bb-player.vue'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 const showDebug = ref(false)
 
-const playQueueStore = usePlayQueueStore()
 const playlistsStore = usePlaylistsStore()
-const playerStore = usePlayerStore()
 const leftDrawerOpen = ref(true)
+
+watch(leftDrawerOpen, () => {
+  if (!leftDrawerOpen.value) leftDrawerOpen.value = true
+})
+
 </script>
 
 <style lang="scss">

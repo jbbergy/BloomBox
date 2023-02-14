@@ -1,15 +1,8 @@
 import { defineStore } from 'pinia';
 import { iFile } from 'src/services/interfaces/file.interface';
-import { readMetadata } from '../services/metadata/metadata.service'
-import { Buffer } from 'buffer'
-
-const getRandomValue = (lower, upper) => {
-  const crypto = window.crypto
-  const range = upper - lower + 1;
-  const array = new Uint32Array(1);
-  crypto.getRandomValues(array);
-  return lower + (array[0] % range);
-}
+import { CacheImageService } from '../services/cache/images.cache.service'
+import CoverImage from '../assets/img/cover.jpg'
+import { getRandomValue } from '../utils/random'
 
 export const usePlayQueueStore = defineStore('playQueue', {
   state: () => ({
@@ -22,17 +15,10 @@ export const usePlayQueueStore = defineStore('playQueue', {
   }),
   actions: {
     async getCurrentCover() {
-      if (!this.playingFile?.path) return null
-      let metadata = null
-      try {
-        metadata = await readMetadata(this.playingFile?.path)
-      } catch (error) {
-        console.error(error)
-      }
-      if (metadata?.tags?.picture) {
-        const image = Buffer.from(metadata.tags?.picture?.data).toString('base64')
-        this.currentCover = `data:${metadata.tags?.picture?.format};base64,${image}`
-      }
+      this.currentCover = CoverImage
+      if (!this.playingFile || !this.playingFile.album) return null
+      const cacheImageService = new CacheImageService()
+      this.currentCover = cacheImageService.getFromCache(this.playingFile.album)
     },
     addToQueue(files: iFile[]) {
       this.queue = []
