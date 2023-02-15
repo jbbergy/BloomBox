@@ -17,7 +17,7 @@
       tabindex="0"
     >
       <div class="bb-tree__img">
-        <img :src="playlist.img"/>
+        <img :src="getPlaylistCover(playlist)"/>
       </div>
       <div class="bb-tree__label">
         {{ playlist.label }}
@@ -37,6 +37,7 @@ import { computed, onBeforeMount,onMounted, watch, ref } from 'vue'
 import InlineSvg from 'vue-inline-svg';
 import BBButton from '../../atoms/bb-button/bb-button.vue'
 import IconTrash from '../../../assets/icons/i-trash.svg'
+import ImgCover from '../../../assets/img/cover.jpg'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
 import { PlaylistsService } from '../../../services/playlists/playlists.service'
@@ -44,12 +45,14 @@ import { useRouter } from 'vue-router';
 import { iPlaylist } from '../../../services/interfaces/playlist.interface';
 import { iFile } from '../../../services/interfaces/file.interface';
 import { getRandomValue } from '../../../utils/random'
+import { CacheImageService } from '../../../services/cache/images.cache.service'
 const selectedNode = ref<iPlaylist>();
 
 const router = useRouter();
 const playlistsStore = usePlaylistsStore()
 const playQueueStore = usePlayQueueStore()
 const playlistsService = new PlaylistsService()
+const cacheImageService = new CacheImageService()
 
 watch(selectedNode, (node: iPlaylist) => {
   if (!node || !playlistsStore.playlists) return
@@ -66,6 +69,14 @@ const hasPlayists = computed(() => {
 })
 
 const currentPlaylistId = computed(() => playlistsStore.currentPlaylist?.uuid)
+
+const getPlaylistCover = (playlist: iPlaylist) => {
+  if (playlist.files && playlist.files.length > 0 && playlist.files[0].album) {
+    const img = cacheImageService.getFromCache(playlist.files[0].album)
+    return img
+  }
+  return ImgCover
+}
 
 const onSelectNode = (playlist: iPlaylist, play = false) => {
   selectedNode.value = playlist

@@ -107,12 +107,10 @@ onMounted(() => {
           playerStore.defaultVolume = 0
           playerStore.currentInstance?.setVolume(playerStore.defaultVolume)
           isMute.value = true
-          console.log('true playerStore.defaultVolume', playerStore.defaultVolume)
         } else {
           playerStore.defaultVolume = volumeBackup.value || 0
           playerStore.currentInstance?.setVolume(playerStore.defaultVolume)
           isMute.value = false
-          console.log('false playerStore.defaultVolume', playerStore.defaultVolume)
         }
       }
       clearTimeout(timeoutId.value)

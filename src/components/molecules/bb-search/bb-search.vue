@@ -22,6 +22,7 @@
 </template>
 
 <script lang="ts" setup>
+import { watch, computed } from 'vue'
 import InlineSvg from 'vue-inline-svg'
 import BBButton from '../../atoms/bb-button/bb-button.vue'
 import BBInput from '../../atoms/bb-input/bb-input.vue'
@@ -29,9 +30,20 @@ import IconHome from '../../../assets/icons/i-home.svg'
 import IconSort from '../../../assets/icons/i-sort.svg'
 import { useRouter } from 'vue-router';
 import { usePlaylistsStore } from '../../../stores/playlists.store'
+import { CacheImageService } from '../../../services/cache/images.cache.service'
 
+const cacheImageService= new CacheImageService()
 const playlistsStore = usePlaylistsStore()
 const router = useRouter();
+
+const filterValue = computed(() => playlistsStore.filter)
+
+watch(filterValue, (value) => {
+  if (value === ':refresh') {
+    console.info('force cache refresh')
+    cacheImageService.setForceUpdate()
+  }
+})
 
 const goHome = () => {
   router.push({ name: 'home' });
