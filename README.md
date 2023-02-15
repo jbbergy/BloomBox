@@ -1,41 +1,18 @@
-# BloomBox (bloombox)
+# Bloombox
 
-A music player
+A music player for you favorites files
 
-## Install the dependencies
-```bash
-yarn
-# or
-npm install
-```
+## Compatibilities
 
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
-```bash
-quasar dev
-```
+- OS : Windows
+- Files formats : MP3, MPEG, OPUS, OGG, OGA, WAV, AAC, CAF, M4A, MP4, WEBA, WEBM, DOLBY, FLAC
+- Metadatas formats (read only) : ID3v1, ID3v2, MP4, FLAC
+
+## Install dependencies
 
 
-### Lint the files
-```bash
-yarn lint
-# or
-npm run lint
-```
+```npm install```
 
+or
 
-### Format the files
-```bash
-yarn format
-# or
-npm run format
-```
-
-
-
-### Build the app for production
-```bash
-quasar build
-```
-
-### Customize the configuration
-See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
+```yarn```
