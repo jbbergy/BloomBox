@@ -21,12 +21,14 @@
 
 <script lang="ts" setup>
 import InlineSvg from 'vue-inline-svg';
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import BBTransportButton from '../../../components/atoms/bb-transport-button/bb-transport-button.vue'
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
 import { usePlayerStore } from '../../../stores/player.store'
 import IconSoundUp from '../../../assets/icons/i-sound-up.svg'
 import IconSoundOff from '../../../assets/icons/i-sound-off.svg'
+
+const DEFAULT_VOLUME = 'default-volume'
 
 const playQueueStore = usePlayQueueStore()
 const playerStore = usePlayerStore()
@@ -39,6 +41,10 @@ const soundIcon = computed(() => isMute.value ? IconSoundOff : IconSoundUp)
 const isFileLoaded = computed(() => !!playQueueStore.playingFile )
 
 const volume = computed(() => playerStore?.defaultVolume || 0)
+
+onMounted(() => {
+  playerStore.defaultVolume = Number.parseFloat(localStorage.getItem(DEFAULT_VOLUME) || '0.5')
+})
 
 watch(isMute, (value) => {
   if (value) {
@@ -57,6 +63,7 @@ const onVolumeChange = (event) => {
   const newVolume = event?.target?.value || 0
   if (playerStore.currentInstance) {
     playerStore.defaultVolume = newVolume
+    localStorage.setItem(DEFAULT_VOLUME, newVolume)
   }
 }
 

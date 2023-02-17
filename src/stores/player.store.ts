@@ -4,7 +4,7 @@ import { AudioService } from '../services/audio/audio.service'
 export const usePlayerStore = defineStore('player', {
   state: () => ({
     currentInstance: null as AudioService | null,
-    defaultVolume: 0.8,
+    defaultVolume: 0.5,
   }),
   actions: {
     pause() {

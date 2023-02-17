@@ -14,7 +14,7 @@ export const usePlayQueueStore = defineStore('playQueue', {
     shuffle: false
   }),
   actions: {
-    async getCurrentCover() {
+    getCurrentCover() {
       this.currentCover = CoverImage
       if (!this.playingFile || !this.playingFile.album) return null
       const cacheImageService = new CacheImageService()

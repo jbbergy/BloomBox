@@ -2,11 +2,7 @@
   <div class="bb-player">
     <div class="bb-player__left">
       <div class="bb-player__cover">
-        <img
-          v-if="fileImage"
-          :src="fileImage"
-          alt="Cover"
-        />
+        <img v-if="fileImage" :src="fileImage" alt="Cover" />
       </div>
       <div class="bb-player__track-infos">
         <template v-if="playQueueStore.playingFile">
@@ -21,28 +17,28 @@
     </div>
     <div class="bb-player__middle">
       <div class="bb-player__transport">
-        <BBTransportButton
-          :is-active="isShuffle"
-          @click="onShuffle"
-          no-bg
-        >
+        <BBTransportButton :is-active="isShuffle" @click="onShuffle" no-bg>
           <inline-svg :src="IconShuffle" aria-label="Mode aléatoire" />
         </BBTransportButton>
         <BBTransportButton @click="onPrevFile">
           <inline-svg :src="IconPrev" aria-label="Fichier précédent" />
         </BBTransportButton>
         <BBTransportButton @click="onPlayFile" size="large">
-          <inline-svg v-show="isPaused || !isPlaying" :src="IconPlay" aria-label="Bouton de lecture" />
-          <inline-svg v-show="!isPaused && isPlaying" :src="IconPause" aria-label="Bouton de lecture" />
+          <inline-svg
+            v-show="isPaused || !isPlaying"
+            :src="IconPlay"
+            aria-label="Bouton de lecture"
+          />
+          <inline-svg
+            v-show="!isPaused && isPlaying"
+            :src="IconPause"
+            aria-label="Bouton de lecture"
+          />
         </BBTransportButton>
         <BBTransportButton @click="onNextFile">
           <inline-svg :src="IconNext" aria-label="Fichier suivant" />
         </BBTransportButton>
-        <BBTransportButton
-          :is-active="isLoop"
-          @click="onLoop"
-          no-bg
-        >
+        <BBTransportButton :is-active="isLoop" @click="onLoop" no-bg>
           <inline-svg :src="IconLoop" aria-label="Lecture en boucle" />
         </BBTransportButton>
       </div>
@@ -58,18 +54,18 @@
 
 <script lang="ts" setup>
 import { watch, computed, ref, onMounted } from 'vue'
-import InlineSvg from 'vue-inline-svg';
-import IconPlay from '../../../assets/icons/i-play.svg';
-import IconPause from '../../../assets/icons/i-pause.svg';
-import IconPrev from '../../../assets/icons/i-step-backward.svg';
-import IconNext from '../../../assets/icons/i-step-forward.svg';
-import IconLoop from '../../../assets/icons/i-loop.svg';
-import IconShuffle from '../../../assets/icons/i-shuffle.svg';
-import ImgCover from '../../../assets/img/cover.jpg';
+import InlineSvg from 'vue-inline-svg'
+import IconPlay from '../../../assets/icons/i-play.svg'
+import IconPause from '../../../assets/icons/i-pause.svg'
+import IconPrev from '../../../assets/icons/i-step-backward.svg'
+import IconNext from '../../../assets/icons/i-step-forward.svg'
+import IconLoop from '../../../assets/icons/i-loop.svg'
+import IconShuffle from '../../../assets/icons/i-shuffle.svg'
+import ImgCover from '../../../assets/img/cover.jpg'
 import BBTransportButton from '../../../components/atoms/bb-transport-button/bb-transport-button.vue'
 import BBProgress from '../../molecules/bb-progress/bb-progress.vue'
 import BBVolumeControl from '../../../components/molecules/bb-volume-control/bb-volume-control.vue'
-import { iFile } from 'src/services/interfaces/file.interface';
+import { iFile } from 'src/services/interfaces/file.interface'
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
 import { usePlayerStore } from '../../../stores/player.store'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
@@ -77,6 +73,7 @@ import { usePlaylistsStore } from '../../../stores/playlists.store'
 const isPaused = ref(false)
 const isPlaying = ref(false)
 const timeoutId = ref<NodeJS.Timeout>(null)
+const playTimeoutId = ref<NodeJS.Timeout>(null)
 const volumeBackup = ref(0)
 const isMute = ref(false)
 
@@ -85,23 +82,28 @@ const playerStore = usePlayerStore()
 const playlistsStore = usePlaylistsStore()
 
 onMounted(() => {
-  document.addEventListener('keydown', (event: Event) => {
+  window.addEventListener('keydown', (event: Event) => {
     if (timeoutId.value) clearTimeout(timeoutId.value)
 
-    timeoutId.value = setTimeout(() => {
-      if (event.keyCode === 32 || event.keyCode === 179) { // space / play/pause
+    const keyCodeToPrevent = [32, 179, 176, 177, 178]
+    if (keyCodeToPrevent.includes(event.keyCode)) {
         event.preventDefault()
+        event.stopPropagation()
         event.stopImmediatePropagation()
+    }
+
+    timeoutId.value = setTimeout(() => {
+      if (event.keyCode === 32 || event.keyCode === 179) {
+        // space / play/pause
         onPlayFile()
       } else if (event.keyCode === 176) {
-        event.preventDefault()
+        // next
         onNextFile()
       } else if (event.keyCode === 177) {
-        event.preventDefault()
+        // prev
         onPrevFile()
       } else if (event.keyCode === 178) {
-        event.stopImmediatePropagation()
-        event.preventDefault()
+        // mute
         if (!isMute.value) {
           volumeBackup.value = playerStore?.defaultVolume
           playerStore.defaultVolume = 0
@@ -168,20 +170,26 @@ const fileImage = computed(() => {
   return playQueueStore.currentCover || ImgCover
 })
 
-watch(playingFile, async (value: iFile) => {
-  if (value) {
-    playlistsStore.currentPlaylist = playlistsStore.selectedPlaylist
-    playerStore.play(value.path, () => {
-      onNextFile()
-    })
-    isPlaying.value = !!playerStore.currentInstance?.getIsPlaying()
-    isPaused.value = !!playerStore.currentInstance?.getIsPaused()
-    await playQueueStore.getCurrentCover()
+watch(
+  playingFile,
+  async (value: iFile) => {
+    if (value) {
+      playlistsStore.currentPlaylist = playlistsStore.selectedPlaylist
+      if (playTimeoutId.value) clearTimeout(playTimeoutId.value)
+      playTimeoutId.value = setTimeout(() => {
+        playerStore.play(value.path, () => {
+          onNextFile()
+        })
+        isPlaying.value = !!playerStore.currentInstance?.getIsPlaying()
+        isPaused.value = !!playerStore.currentInstance?.getIsPaused()
+      }, 10)
+      playQueueStore.getCurrentCover()
+    }
+  },
+  {
+    deep: true,
   }
-}, {
-  deep: true
-})
-
+)
 </script>
 
 <style lang="scss">
