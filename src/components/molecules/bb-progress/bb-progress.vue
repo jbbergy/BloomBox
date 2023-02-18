@@ -36,15 +36,17 @@ onMounted(() => {
   seekIntervalId.value = setInterval(() => {
     if (!playerStore.currentInstance) return;
     if (updateValue.value) {
-      seek.value = playerStore.currentInstance.getInstance()?.seek() || 0;
+      seek.value = playerStore.currentInstance.getInstance()?.getCurrentTime() || 0;
     }
   }, 100);
 })
 
 watch(updateValue, () => {
   if (!!doUpdateSeek.value) {
-    seekValue.value = playQueueStore?.playingFile?.time * (doUpdateSeek.value / 100)
-    playerStore.currentInstance?.seek(seekValue.value)
+    const fileTime = playQueueStore?.playingFile?.time
+    seekValue.value = fileTime * (doUpdateSeek.value / 100)
+    const newTime = seekValue.value > fileTime ? fileTime : seekValue.value
+    playerStore.currentInstance?.seek(newTime)
     doUpdateSeek.value = null
   }
 })

@@ -1,52 +1,34 @@
+type AudioPlayerEvents = {
+  end: () => void;
+};
 export class AudioPlayer {
   private audioCtx: AudioContext;
   private buffer: AudioBuffer;
   private sourceNode: AudioBufferSourceNode;
   private gainNode: GainNode;
-  private analyserNode: AnalyserNode;
   private isPlaying: boolean;
-  private isLoop: boolean;
-  private vuMeter: number;
+  private isPaused: boolean;
+  private startTime: number;
+  private events: Partial<AudioPlayerEvents> = {};
 
 
-  constructor(private audioUrl: string, private volume: number = 1, private meterCallback?: (level: number) => void) {
+  constructor(
+    private audioUrl: string,
+    private volume: number = 1
+  ) {
+    this.startTime = 0
     this.audioCtx = new AudioContext();
-    this.buffer = null;
-    this.sourceNode = null;
     this.gainNode = this.audioCtx.createGain();
     this.gainNode.gain.value = volume;
     this.isPlaying = false;
-    this.vuMeter = 0;
+    this.isPaused = false;
+    this.gainNode.connect(this.audioCtx.destination);
 
-    // Create an AnalyserNode to use as a vu-meter
-    this.analyserNode = this.audioCtx.createAnalyser();
-    this.analyserNode.fftSize = 256;
-
-    // Connect nodes to the graph
-    this.gainNode.connect(this.analyserNode);
-    this.analyserNode.connect(this.audioCtx.destination);
-
-    if (meterCallback) {
-      this.startMeter();
-    }
   }
 
-  private startMeter(): void {
-    const meterDataArray = new Uint8Array(this.analyserNode.frequencyBinCount);
-    const updateMeter = (): void => {
-      this.analyserNode.getByteTimeDomainData(meterDataArray);
-      let sum = 0;
-      for (let i = 0; i < meterDataArray.length; i++) {
-        sum += (meterDataArray[i] - 128) * (meterDataArray[i] - 128);
-      }
-      const rms = Math.sqrt(sum / meterDataArray.length);
-      this.vuMeter = Math.max(this.vuMeter * 0.9, rms);
-      if (this.meterCallback) {
-        this.meterCallback(this.vuMeter);
-      }
-      requestAnimationFrame(updateMeter);
-    };
-    requestAnimationFrame(updateMeter);
+  on(event: string, callback: unknown) {
+    if (!this.events) return
+    this.events[event] = callback
   }
 
   async loadAudio(): Promise<void> {
@@ -55,35 +37,62 @@ export class AudioPlayer {
     this.buffer = await this.audioCtx.decodeAudioData(audioData);
   }
 
+  initEvent() {
+    this.sourceNode.addEventListener('ended', () => {
+      const currentTime = Math.floor(this.getCurrentTime())
+      const duration = Math.floor(this.buffer.duration)
+      if (currentTime >= duration && this.events?.end) {
+        this.events.end()
+      }
+    });
+  }
+
   play(): void {
     if (this.buffer) {
       this.sourceNode = this.audioCtx.createBufferSource();
       this.sourceNode.buffer = this.buffer;
+      this.initEvent()
       this.sourceNode.connect(this.gainNode);
-      this.sourceNode.start(0, this.getCurrentTime());
+      this.sourceNode.start(0, 0);
       this.isPlaying = true;
+      this.isPaused = false;
     }
   }
 
   stop() {
-    if (this.sourceNode) {
+    if (this.sourceNode && this.isPlaying) {
       this.sourceNode.stop()
+      this.isPlaying = false;
+      this.isPaused = false;
     }
-  }
-
-  loop(isLoop: boolean) {
-    this.isLoop = isLoop
   }
 
   pause(): void {
     if (this.sourceNode) {
-      this.sourceNode.stop();
-      this.isPlaying = false;
+      if (this.isPlaying) {
+        this.sourceNode.stop();
+        this.audioCtx.suspend();
+        this.isPlaying = false;
+        this.isPaused = true;
+      } else if (this.isPaused) {
+        this.audioCtx.resume();
+        const offset = this.getCurrentTime();
+        this.sourceNode = this.audioCtx.createBufferSource();
+        this.sourceNode.buffer = this.buffer;
+        this.sourceNode.connect(this.gainNode);
+        this.sourceNode.start(0, offset);
+        this.isPlaying = true;
+        this.isPaused = false;
+      }
     }
   }
 
   getIsplaying() {
     return this.isPlaying
+  }
+
+  getIsPaused() {
+    return this.isPaused
   }
 
   getDuration(): number {
@@ -94,8 +103,8 @@ export class AudioPlayer {
   }
 
   getCurrentTime(): number {
-    if (this.sourceNode) {
-      return this.audioCtx.currentTime - this.sourceNode.startTime;
+    if (this.audioCtx) {
+      return this.audioCtx.currentTime - this.startTime
     }
     return 0;
   }
@@ -103,8 +112,14 @@ export class AudioPlayer {
   setCurrentTime(time: number): void {
     if (this.sourceNode) {
       this.sourceNode.stop();
-      this.sourceNode.start(0, time);
+      this.sourceNode.disconnect();
     }
+    this.sourceNode = this.audioCtx.createBufferSource();
+    this.sourceNode.buffer = this.buffer;
+    this.sourceNode.connect(this.gainNode);
+    this.sourceNode.start(0, time);
+    this.initEvent()
+    this.startTime = this.audioCtx.currentTime - time;
   }
 
   setVolume(volume: number): void {

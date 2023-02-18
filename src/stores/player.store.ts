@@ -9,11 +9,7 @@ export const usePlayerStore = defineStore('player', {
   actions: {
     pause() {
       if (!this.currentInstance) return
-      if (this.currentInstance.getIsPlaying()) {
-        this.currentInstance.pause()
-      } else {
-        this.currentInstance.play()
-      }
+      this.currentInstance.pause()
     },
     play(filePath: string, callback: unknown) {
       if (this.currentInstance) {
@@ -23,9 +19,11 @@ export const usePlayerStore = defineStore('player', {
       this.currentInstance = new AudioService(filePath)
       this.currentInstance.setVolume(this.defaultVolume)
       this.currentInstance.play()
-      this.currentInstance?.getInstance().on('end', function () {
-        callback()
-      })
+      if (callback) {
+        this.currentInstance.getInstance().on('end', () => {
+          callback()
+        })
+      }
     },
   },
   persist: {

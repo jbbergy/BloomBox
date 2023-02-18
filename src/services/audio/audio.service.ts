@@ -1,10 +1,7 @@
-import { Howl, Howler } from 'howler'
 import { AudioPlayer } from '../../api/audio/audio.api'
 
 export class AudioService {
   private _instance: AudioPlayer | null
-  private _isPaused = true
-  private _isPlaying = false
   private _instanceId: number | undefined = undefined
 
   constructor(file: string) {
@@ -24,11 +21,11 @@ export class AudioService {
   }
 
   getIsPaused() {
-    return this._isPaused
+    return this._instance?.getIsPaused()
   }
 
   getIsPlaying() {
-    return this._isPlaying
+    return this._instance?.getIsplaying()
   }
 
   getDuration() {
@@ -44,36 +41,24 @@ export class AudioService {
     if (!this._instance) return
     await this._instance.loadAudio()
     this._instance.play()
-    this._isPaused = false
-    this._isPlaying = true
   }
 
   pause() {
     if (!this._instance) return
     this._instance.pause()
-    this._isPaused = true
-    this._isPlaying = false
   }
 
 
   stop() {
     if (!this._instance) return
-    if (this._isPlaying || this._isPaused === true) {
+    if (this.getIsPlaying() || this.getIsPaused() === true) {
       this._instance.stop()
-      this._isPaused = false
-      this._isPlaying = false
     }
   }
 
   seek(seekTo) {
-    if (this._instanceId) {
+    if (this._instance) {
       this._instance?.setCurrentTime(seekTo)
-    }
-  }
-
-  loop(loop) {
-    if (this._instanceId) {
-      this._instance?.loop(loop)
     }
   }
 }

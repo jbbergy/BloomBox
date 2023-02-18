@@ -39,7 +39,7 @@
           <inline-svg
             v-show="!isPaused && isPlaying"
             :src="IconPause"
-            aria-label="Bouton de lecture"
+            aria-label="Bouton de pause"
           />
         </BBTransportButton>
         <BBTransportButton @click="onNextFile">
@@ -77,8 +77,6 @@ import { usePlayQueueStore } from '../../../stores/play-queue.store'
 import { usePlayerStore } from '../../../stores/player.store'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
 
-const isPaused = ref(false)
-const isPlaying = ref(false)
 const timeoutId = ref<NodeJS.Timeout>(null)
 const playTimeoutId = ref<NodeJS.Timeout>(null)
 const volumeBackup = ref(0)
@@ -127,6 +125,9 @@ onMounted(() => {
   })
 })
 
+const isPaused = computed(() => playerStore.currentInstance?.getIsPaused())
+const isPlaying = computed(() => playerStore.currentInstance?.getIsPlaying())
+
 const scrollTotitle = () => {
   if (!playQueueStore.playingFile || !playlistsStore.currentPlaylist) return
   const playlist = document.getElementById(playlistsStore.currentPlaylist.uuid)
@@ -148,10 +149,12 @@ const onPlayFile = () => {
   if (!isPlaying.value && !isPaused.value) {
     playQueueStore.playingFile = playQueueStore.selectedFile
     playQueueStore.addToQueue(playlistsStore.selectedPlaylist?.files)
-  } else if (isPlaying.value) {
+  } else if (
+    isPlaying.value && !isPaused.value
+    || !isPlaying.value && isPaused.value
+  ) {
     onPauseFile()
   }
-  isPaused.value = playerStore.currentInstance.getIsPaused()
 }
 
 const onPauseFile = () => {
@@ -203,8 +206,6 @@ watch(
         playerStore.play(value.path, () => {
           onNextFile()
         })
-        isPlaying.value = !!playerStore.currentInstance?.getIsPlaying()
-        isPaused.value = !!playerStore.currentInstance?.getIsPaused()
       }, 10)
       playQueueStore.getCurrentCover()
     }
