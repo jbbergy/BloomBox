@@ -6,10 +6,17 @@
       </div>
       <div class="bb-player__track-infos">
         <template v-if="playQueueStore.playingFile">
-          <div class="bb-player__track-title">
+          <div
+            @click="scrollTotitle"
+            class="bb-player__track-title"
+            tabindex="0"
+          >
             {{ playQueueStore.playingFile.label }}
           </div>
-          <div class="bb-player__track-artist">
+          <div
+            @click="scrollTotitle"
+            class="bb-player__track-artist"
+          >
             {{ playQueueStore.playingFile.artist }}
           </div>
         </template>
@@ -120,6 +127,22 @@ onMounted(() => {
   })
 })
 
+const scrollTotitle = () => {
+  if (!playQueueStore.playingFile || !playlistsStore.currentPlaylist) return
+  const playlist = document.getElementById(playlistsStore.currentPlaylist.uuid)
+  if (!playlist) return
+  playlist.click()
+  playlist.focus()
+  setTimeout(() => {
+    const element = document.querySelector(`[data-uuid="${playQueueStore.playingFile.uuid}"]`)
+    if (!element) return
+    element.scrollIntoView({
+      behavior: 'smooth',
+      block: 'center',
+    })
+  }, 300);
+}
+
 const onPlayFile = () => {
   if (!playQueueStore.selectedFile) return
   if (!isPlaying.value && !isPaused.value) {
@@ -224,6 +247,11 @@ watch(
     font-size: $bb-font-size-regular;
     word-wrap: break-word;
     white-space: break-spaces;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
   &__track-artist {
@@ -231,6 +259,11 @@ watch(
     font-size: $bb-font-size-small;
     word-wrap: break-word;
     white-space: break-spaces;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
 
   &__cover {

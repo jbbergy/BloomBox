@@ -6,6 +6,7 @@
     <div
       v-for="playlist in playlistsStore.filteredPlaylists"
       :key="playlist.uuid"
+      :id="playlist.uuid"
       :class="[
         'bb-tree__item',
         currentPlaylistId === playlist.uuid && 'bb-tree__item--selected'
