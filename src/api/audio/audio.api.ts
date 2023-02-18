@@ -10,12 +10,13 @@ export class AudioPlayer {
   private isPaused: boolean;
   private startTime: number;
   private events: Partial<AudioPlayerEvents> = {};
-
+  private isEndEmitted: boolean;
 
   constructor(
     private audioUrl: string,
     private volume: number = 1
   ) {
+    this.isEndEmitted = false
     this.startTime = 0
     this.audioCtx = new AudioContext();
     this.gainNode = this.audioCtx.createGain();
@@ -39,6 +40,7 @@ export class AudioPlayer {
 
   initEvent() {
     this.sourceNode.addEventListener('ended', () => {
+      this.isEndEmitted = true
       const currentTime = Math.floor(this.getCurrentTime())
       const duration = Math.floor(this.buffer.duration)
       if (currentTime >= duration && this.events?.end) {
@@ -49,6 +51,7 @@ export class AudioPlayer {
 
   play(): void {
     if (this.buffer) {
+      this.isEndEmitted = false
       this.sourceNode = this.audioCtx.createBufferSource();
       this.sourceNode.buffer = this.buffer;
       this.initEvent()
@@ -104,7 +107,13 @@ export class AudioPlayer {
 
   getCurrentTime(): number {
     if (this.audioCtx) {
-      return this.audioCtx.currentTime - this.startTime
+      const currentTime = this.audioCtx.currentTime - this.startTime
+      const time = Math.floor(currentTime)
+      const duration = Math.floor(this.buffer.duration)
+      if (time >= duration && this.events?.end && !this.isEndEmitted) {
+        this.events.end()
+      }
+      return currentTime
     }
     return 0;
   }
