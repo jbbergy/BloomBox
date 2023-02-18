@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts" setup>
-import InlineSvg from 'vue-inline-svg';
+import InlineSvg from 'vue-inline-svg'
 import { computed, ref, watch, onMounted } from 'vue'
 import BBTransportButton from '../../../components/atoms/bb-transport-button/bb-transport-button.vue'
 import { usePlayQueueStore } from '../../../stores/play-queue.store'

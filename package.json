@@ -23,7 +23,6 @@
     "@quasar/extras": "^1.0.0",
     "@types/jsmediatags": "^3.9.3",
     "dayjs": "^1.11.7",
-    "howler": "^2.2.3",
     "idb": "^7.1.1",
     "jsmediatags": "^3.9.7",
     "pinia": "^2.0.11",

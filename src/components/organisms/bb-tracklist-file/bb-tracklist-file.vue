@@ -36,13 +36,13 @@
 </template>
 
 <script lang="ts" setup>
-import PicturePlaceholder from '../../../assets/img/cover.jpg';
-import { PropType, computed /*, onUnmounted*/, onBeforeMount, onMounted, ref, watch } from 'vue';
-import { iFile } from 'src/services/interfaces/file.interface';
-import InlineSvg from 'vue-inline-svg';
-import IconPlay from '../../../assets/icons/i-play.svg';
-import { usePlayQueueStore } from '../../../stores/play-queue.store';
-import { usePlaylistsStore } from '../../../stores/playlists.store';
+import PicturePlaceholder from '../../../assets/img/cover.jpg'
+import { PropType, computed /*, onUnmounted*/, onBeforeMount, onMounted, ref, watch } from 'vue'
+import { iFile } from 'src/services/interfaces/file.interface'
+import InlineSvg from 'vue-inline-svg'
+import IconPlay from '../../../assets/icons/i-play.svg'
+import { usePlayQueueStore } from '../../../stores/play-queue.store'
+import { usePlaylistsStore } from '../../../stores/playlists.store'
 import { CacheImageService } from '../../../services/cache/images.cache.service'
 
 const cacheImageService = new CacheImageService()
@@ -71,7 +71,7 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
-});
+})
 
 const refreshCovers = computed(() => playlistsStore.refreshCovers)
 
@@ -122,10 +122,10 @@ const onDelete = async () => {
 }
 
 const onPlayFile = () => {
-  if (!playQueueStore.selectedFile) return;
-  playQueueStore.playingFile = playQueueStore.selectedFile;
-  playQueueStore.addToQueue(playlistsStore.selectedPlaylist?.files);
-};
+  if (!playQueueStore.selectedFile) return
+  playQueueStore.playingFile = playQueueStore.selectedFile
+  playQueueStore.addToQueue(playlistsStore.selectedPlaylist?.files)
+}
 </script>
 
 <style lang="scss">

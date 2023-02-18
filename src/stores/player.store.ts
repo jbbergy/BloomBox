@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia';
+import { defineStore } from 'pinia'
 import { AudioService } from '../services/audio/audio.service'
 
 export const usePlayerStore = defineStore('player', {
@@ -37,4 +37,4 @@ export const usePlayerStore = defineStore('player', {
       }
     ],
   },
-});
+})

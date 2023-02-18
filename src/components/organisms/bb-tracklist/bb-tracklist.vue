@@ -26,7 +26,7 @@ import { computed, watch } from 'vue'
 import BBTracklistFile from '../bb-tracklist-file/bb-tracklist-file.vue'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
-import { iFile } from '../../../services/interfaces/file.interface';
+import { iFile } from '../../../services/interfaces/file.interface'
 
 const playQueueStore = usePlayQueueStore()
 const playlistsStore = usePlaylistsStore()

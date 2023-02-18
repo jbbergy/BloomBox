@@ -35,21 +35,21 @@
 </template>
 <script lang="ts" setup>
 import { computed, onBeforeMount,onMounted, watch, ref } from 'vue'
-import InlineSvg from 'vue-inline-svg';
+import InlineSvg from 'vue-inline-svg'
 import BBButton from '../../atoms/bb-button/bb-button.vue'
 import IconTrash from '../../../assets/icons/i-trash.svg'
 import ImgCover from '../../../assets/img/cover.jpg'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
 import { PlaylistsService } from '../../../services/playlists/playlists.service'
-import { useRouter } from 'vue-router';
-import { iPlaylist } from '../../../services/interfaces/playlist.interface';
-import { iFile } from '../../../services/interfaces/file.interface';
+import { useRouter } from 'vue-router'
+import { iPlaylist } from '../../../services/interfaces/playlist.interface'
+import { iFile } from '../../../services/interfaces/file.interface'
 import { getRandomValue } from '../../../utils/random'
 import { CacheImageService } from '../../../services/cache/images.cache.service'
-const selectedNode = ref<iPlaylist>();
+const selectedNode = ref<iPlaylist>()
 
-const router = useRouter();
+const router = useRouter()
 const playlistsStore = usePlaylistsStore()
 const playQueueStore = usePlayQueueStore()
 const playlistsService = new PlaylistsService()
@@ -97,34 +97,34 @@ const onDeletePlaylist = async (playlistId: string) => {
   try {
     foundItem = await playlistsService.findByUUID(playlistId)
   } catch (error) {
-    console.error(error);
+    console.error(error)
   }
 
-  if (!foundItem) return;
+  if (!foundItem) return
 
   try {
-    await playlistsService.delete(foundItem.key);
-    await playlistsStore.init();
-    router.push({ name: 'home' });
+    await playlistsService.delete(foundItem.key)
+    await playlistsStore.init()
+    router.push({ name: 'home' })
   } catch (error) {
-    console.error(error);
+    console.error(error)
   }
 }
 
 onBeforeMount(async () => {
   try {
-    await playlistsService.init();
+    await playlistsService.init()
   } catch (error) {
-    console.error(error);
+    console.error(error)
   }
 })
 onMounted(async () => {
   try {
-    await playlistsStore.init();
+    await playlistsStore.init()
   } catch (error) {
-    console.error(error);
+    console.error(error)
   }
-});
+})
 
 </script>
 

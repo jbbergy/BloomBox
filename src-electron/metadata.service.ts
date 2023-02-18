@@ -4,12 +4,12 @@ export function readMetadata(file) {
   return new Promise((resolve, reject) => {
     jsmediatags.read(file, {
       onSuccess: (tag) => {
-        resolve(tag);
+        resolve(tag)
       },
       onError: (error) => {
         console.error('SERVER readMetadata error', error)
-        reject(error);
+        reject(error)
       },
-    });
-  });
+    })
+  })
 }

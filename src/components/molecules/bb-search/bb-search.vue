@@ -12,7 +12,7 @@
       v-model="playlistsStore.filter"
       placeholder="Rechercher"
     />
-    <BBButton v-if="false">
+    <BBButton @click="sortPlaylists">
       <inline-svg
         :src="IconSort"
         aria-label="Changer l'order des playlists"
@@ -28,13 +28,13 @@ import BBButton from '../../atoms/bb-button/bb-button.vue'
 import BBInput from '../../atoms/bb-input/bb-input.vue'
 import IconHome from '../../../assets/icons/i-home.svg'
 import IconSort from '../../../assets/icons/i-sort.svg'
-import { useRouter } from 'vue-router';
+import { useRouter } from 'vue-router'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
 import { CacheImageService } from '../../../services/cache/images.cache.service'
 
 const cacheImageService= new CacheImageService()
 const playlistsStore = usePlaylistsStore()
-const router = useRouter();
+const router = useRouter()
 
 const filterValue = computed(() => playlistsStore.filter)
 
@@ -46,7 +46,16 @@ watch(filterValue, (value) => {
 })
 
 const goHome = () => {
-  router.push({ name: 'home' });
+  router.push({ name: 'home' })
+}
+
+const sortPlaylists = () => {
+  const sortOrder = playlistsStore.sortOrder
+  if (!sortOrder || sortOrder === 'ASC') {
+    playlistsStore.sortOrder = 'DESC'
+  } else {
+    playlistsStore.sortOrder = 'ASC'
+  }
 }
 </script>
 

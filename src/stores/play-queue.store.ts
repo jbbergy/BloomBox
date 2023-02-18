@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia';
-import { iFile } from 'src/services/interfaces/file.interface';
+import { defineStore } from 'pinia'
+import { iFile } from 'src/services/interfaces/file.interface'
 import { CacheImageService } from '../services/cache/images.cache.service'
 import CoverImage from '../assets/img/cover.jpg'
 import { getRandomValue } from '../utils/random'

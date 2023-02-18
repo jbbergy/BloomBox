@@ -29,7 +29,7 @@ const addTracks = () => {
     }
   }
 
-  input.click();
+  input.click()
 }
 </script>
 

@@ -141,7 +141,7 @@ const scrollTotitle = () => {
       behavior: 'smooth',
       block: 'center',
     })
-  }, 300);
+  }, 300)
 }
 
 const onPlayFile = () => {

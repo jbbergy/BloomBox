@@ -1,4 +1,4 @@
-import { iPlaylist } from './../interfaces/playlist.interface';
+import { iPlaylist } from './../interfaces/playlist.interface'
 import { openDB, deleteDB } from 'idb'
 import { PLAYLIST_STORE_NAME, iBloomBoxDB } from '../interfaces/playlists-db.interface'
 
@@ -11,7 +11,7 @@ export class PlaylistsService {
     this.dbPromise = await openDB<iBloomBoxDB>(DATABASE_NAME, 1, {
       upgrade(db) {
         if (!db.objectStoreNames.contains(PLAYLIST_STORE_NAME)) {
-          db.createObjectStore(PLAYLIST_STORE_NAME, { keyPath: 'key', autoIncrement: true });
+          db.createObjectStore(PLAYLIST_STORE_NAME, { keyPath: 'key', autoIncrement: true })
         }
       }
     })
@@ -97,11 +97,11 @@ export class PlaylistsService {
   }
 
   async findByUUID(uuid: string) {
-    const db = await this.dbPromise;
-    const tx = db.transaction(PLAYLIST_STORE_NAME, 'readonly');
-    const store = tx.objectStore(PLAYLIST_STORE_NAME);
-    const items = await store.getAll();
-    const playlists = items.find(p => p.uuid === uuid);
+    const db = await this.dbPromise
+    const tx = db.transaction(PLAYLIST_STORE_NAME, 'readonly')
+    const store = tx.objectStore(PLAYLIST_STORE_NAME)
+    const items = await store.getAll()
+    const playlists = items.find(p => p.uuid === uuid)
 
     if (playlists?.files) {
       playlists.files = JSON.parse(playlists.files)

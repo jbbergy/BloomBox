@@ -34,11 +34,11 @@ const playQueueStore = usePlayQueueStore()
 
 onMounted(() => {
   seekIntervalId.value = setInterval(() => {
-    if (!playerStore.currentInstance) return;
+    if (!playerStore.currentInstance) return
     if (updateValue.value) {
-      seek.value = playerStore.currentInstance.getInstance()?.getCurrentTime() || 0;
+      seek.value = playerStore.currentInstance.getInstance()?.getCurrentTime() || 0
     }
-  }, 100);
+  }, 100)
 })
 
 watch(updateValue, () => {
@@ -62,13 +62,13 @@ function getFileDuration(duration) {
     m: 0,
     s: '00'
   }
-  const minuts = Math.floor(duration / 60);
-  const seconds = Math.floor(duration % 60);
+  const minuts = Math.floor(duration / 60)
+  const seconds = Math.floor(duration % 60)
 
   return {
     m: minuts,
     s: seconds < 10 ? `0${seconds}` : seconds,
-  };
+  }
 }
 
 const fileDuration = computed(() => {
@@ -84,7 +84,7 @@ const isPlayingFile = computed(() => !!playQueueStore?.playingFile)
 const updateProgressBarValue = () => {
   const duration = playQueueStore?.playingFile?.time || 0
   if (duration > 0) {
-    const result = (seek.value / duration) * 100;
+    const result = (seek.value / duration) * 100
     progressBarValue.value = result.toFixed(1)
   }
 }

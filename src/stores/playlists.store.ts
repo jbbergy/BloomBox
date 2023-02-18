@@ -1,8 +1,8 @@
-import { iMetadata } from '../services/interfaces/file.interface';
-import { Buffer } from 'buffer';
+import { iMetadata } from '../services/interfaces/file.interface'
+import { Buffer } from 'buffer'
 import { v4 as uuid } from 'uuid'
 import dayjs from 'dayjs'
-import { defineStore } from 'pinia';
+import { defineStore } from 'pinia'
 import { iPlaylist } from '../services/interfaces/playlist.interface'
 import { iFile } from '../services/interfaces/file.interface'
 import { PlaylistsService } from '../services/playlists/playlists.service'
@@ -21,9 +21,9 @@ const isOlderThanHours = (date: dayjs.Dayjs, hours = 24) => {
 const getCoverBase64 = async (filePath: string) => {
   let metadata: iMetadata | null = null
   try {
-    metadata = await readMetadata(filePath);
+    metadata = await readMetadata(filePath)
   } catch (error) {
-    console.error(error);
+    console.error(error)
   }
 
   if (!metadata) return null
@@ -32,7 +32,7 @@ const getCoverBase64 = async (filePath: string) => {
 
   if (pictureData?.data) {
     const image = Buffer.from(pictureData?.data).toString('base64')
-    return `data:${pictureData?.format};base64,${image}`
+    return `data:${pictureData?.format}base64,${image}`
   }
   return null
 }
@@ -46,12 +46,21 @@ export const usePlaylistsStore = defineStore('playlists', {
     currentPlaylist: null as iPlaylist | null,
     needCacheUpdate: false,
     refreshCovers: false,
+    sortOrder: 'ASC',
   }),
   getters: {
     filteredPlaylists: (state) => {
-      let result: iPlaylist[] | null = state.playlists
+      if (!state.playlists) return []
+      let result: iPlaylist[] = state.playlists
       if (state.filter) {
-        result = state.playlists?.filter(p => p.label.toLowerCase().indexOf(state.filter.toLowerCase()) > -1)
+        result = result?.filter(p => p.label.toLowerCase().indexOf(state.filter.toLowerCase()) > -1)
+      }
+      if (state.sortOrder && result) {
+        if (state.sortOrder === 'ASC') {
+          result = result.sort((a, b) => a.label.localeCompare(b.label))
+        } else if (state.sortOrder === 'DESC') {
+          result = result.sort((a, b) => b.label.localeCompare(a.label))
+        }
       }
       return result
     }
@@ -213,7 +222,7 @@ export const usePlaylistsStore = defineStore('playlists', {
             return new Promise((resolve) => {
               if (audio) {
                 audio.onloadedmetadata = function (data) {
-                  resolve(data?.currentTarget?.duration);
+                  resolve(data?.currentTarget?.duration)
                 }
               }
             })
@@ -248,4 +257,4 @@ export const usePlaylistsStore = defineStore('playlists', {
       this.refreshCovers = true
     },
   },
-});
+})

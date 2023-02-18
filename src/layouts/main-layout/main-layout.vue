@@ -37,8 +37,7 @@
 </template>
 
 <script lang="ts" setup>
-import { usePlaylistsStore } from '../../stores/playlists.store';
-
+import { usePlaylistsStore } from '../../stores/playlists.store'
 import BBHeader from '../../components/organisms/bb-header/bb-header.vue'
 import BBSidebar from '../../components/organisms/bb-sidebar/bb-sidebar.vue'
 import BBPlayer from '../../components/organisms/bb-player/bb-player.vue'

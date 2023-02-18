@@ -1,51 +1,31 @@
 <template>
   <div class="bb-playlist-create">
-    <BBButton
-      class="bb-playlist-create__btn--add"
-      @click="displayCreateModal"
-    >
-      <inline-svg
-        :src="IconPlus"
-        aria-label="Créer une playlist"
-      />
+    <BBButton class="bb-playlist-create__btn--add" @click="displayCreateModal">
+      <inline-svg :src="IconPlus" aria-label="Créer une playlist" />
       Créer un playlist
     </BBButton>
-    <div
-      v-if="isCreateModalOpen"
-      class="bb-playlist-create__modal"
-    >
+    <div v-if="isCreateModalOpen" class="bb-playlist-create__modal">
       <BBInput
         v-model="playlistName"
         :focus-when-ready="true"
         placeholder="Nom de la playlist"
         @press:enter="createPlaylist"
       />
-      <BBButton
-        class="bb-playlist-create__btn--confirm"
-        @click="createPlaylist"
-      >
-        <inline-svg
-          :src="IconConfirm"
-          aria-label="Créer la playlist"
-        />
+      <BBButton class="bb-playlist-create__btn--confirm" @click="createPlaylist">
+        <inline-svg :src="IconConfirm" aria-label="Créer la playlist" />
       </BBButton>
-      <BBButton
-        class="bb-playlist-create__btn--abort"
-        @click="hideCreateModal"
-      >
-        <inline-svg
-          :src="IconAbort"
-          aria-label="Annuler la création de la playlist"
-        />
+      <BBButton class="bb-playlist-create__btn--abort" @click="hideCreateModal">
+        <inline-svg :src="IconAbort" aria-label="Annuler la création de la playlist" />
       </BBButton>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { iPlaylist } from '../../../services/interfaces/playlist.interface'
 import { v4 as uuid } from 'uuid'
 import InlineSvg from 'vue-inline-svg'
-import { ref } from 'vue';
+import { ref } from 'vue'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
 import BBButton from '../../atoms/bb-button/bb-button.vue'
 import BBInput from '../../atoms/bb-input/bb-input.vue'
@@ -70,14 +50,26 @@ function hideCreateModal() {
 function createPlaylist() {
   if (!playlistName.value) return
 
-  playlistsStore.create({
+  const newPlaylist: iPlaylist = {
     label: playlistName.value,
     img: CoverImg,
     uuid: uuid(),
-  })
-  hideCreateModal()
-}
+  }
 
+  playlistsStore.create(newPlaylist)
+  hideCreateModal()
+  setTimeout(() => {
+    const playlistElement = document.getElementById(newPlaylist.uuid)
+    if (playlistElement) {
+      playlistElement.focus()
+      playlistElement.click()
+      playlistElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      })
+    }
+  }, 300)
+}
 </script>
 
 <style lang="scss">
@@ -99,11 +91,9 @@ function createPlaylist() {
     padding: $bb-spacing-small;
     border-radius: $bb-border-radius-regular;
     border: 1px solid $bb-color-Feijoa;
-
   }
 
   &__btn {
-
     &--confirm {
       filter: saturate(0.5);
       svg {

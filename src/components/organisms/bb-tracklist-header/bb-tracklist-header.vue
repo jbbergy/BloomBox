@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts" setup>
-import { iPlaylist } from '../../../services/interfaces/playlist.interface';
+import { iPlaylist } from '../../../services/interfaces/playlist.interface'
 import { computed } from 'vue'
 import ImgCover from '../../../assets/img/cover.jpg'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
