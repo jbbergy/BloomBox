@@ -57,4 +57,16 @@ export const usePlayQueueStore = defineStore('playQueue', {
       this.playingFile = this.queue[idx]
     }
   },
+  persist: {
+    enabled: true,
+    strategies: [
+      {
+        key: 'play-queue-store',
+        paths: [
+          'shuffle',
+          'loop'
+        ]
+      }
+    ],
+  },
 })

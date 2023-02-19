@@ -12,6 +12,10 @@ export class AudioService {
     this._instance = null
   }
 
+  getVolume(): number {
+    return this._instance?.getVolume() || 0
+  }
+
   getInstance() {
     return this._instance
   }

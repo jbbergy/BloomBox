@@ -11,20 +11,29 @@ export class AudioPlayer {
   private startTime: number
   private events: Partial<AudioPlayerEvents> = {}
   private isEndEmitted: boolean
+  private volume: number
+  private audioUrl: string
+  private analyserNode: AnalyserNode;
 
   constructor(
-    private audioUrl: string,
-    private volume: number = 1
+    audioUrl: string,
+    volume = 1
   ) {
     this.isEndEmitted = false
     this.startTime = 0
-    this.audioCtx = new AudioContext()
-    this.gainNode = this.audioCtx.createGain()
-    this.gainNode.gain.value = volume
     this.isPlaying = false
     this.isPaused = false
-    this.gainNode.connect(this.audioCtx.destination)
+    this.volume = volume
+    this.audioUrl = audioUrl
+  }
 
+  getVolume(): number {
+    if (!this.isPlaying && !this.sourceNode && !this.analyserNode) return 0
+    const dataArray = new Uint8Array(this.analyserNode.frequencyBinCount)
+    this.analyserNode.getByteFrequencyData(dataArray)
+    const total = dataArray.reduce((acc, val) => acc + val, 0)
+    const average = total / dataArray.length
+    return average
   }
 
   on(event: string, callback: unknown) {
@@ -33,9 +42,27 @@ export class AudioPlayer {
   }
 
   async loadAudio(): Promise<void> {
+    this.audioCtx = new AudioContext()
     const response = await fetch(this.audioUrl)
     const audioData = await response.arrayBuffer()
     this.buffer = await this.audioCtx.decodeAudioData(audioData)
+
+    this.sourceNode = this.audioCtx.createBufferSource()
+    this.sourceNode.buffer = this.buffer
+    this.initEvent()
+
+    this.gainNode = this.audioCtx.createGain()
+    this.gainNode.gain.value = this.volume
+
+    this.analyserNode = this.audioCtx.createAnalyser()
+    this.analyserNode.fftSize = 1024
+    this.analyserNode.maxDecibels = -10
+    this.analyserNode.minDecibels = -100
+    this.analyserNode.smoothingTimeConstant = 0.8
+
+    this.sourceNode.connect(this.analyserNode)
+    this.analyserNode.connect(this.gainNode)
+    this.gainNode.connect(this.audioCtx.destination)
   }
 
   initEvent() {
@@ -52,10 +79,6 @@ export class AudioPlayer {
   play(): void {
     if (this.buffer) {
       this.isEndEmitted = false
-      this.sourceNode = this.audioCtx.createBufferSource()
-      this.sourceNode.buffer = this.buffer
-      this.initEvent()
-      this.sourceNode.connect(this.gainNode)
       this.sourceNode.start(0, 0)
       this.isPlaying = true
       this.isPaused = false
@@ -82,7 +105,7 @@ export class AudioPlayer {
         const offset = this.getCurrentTime()
         this.sourceNode = this.audioCtx.createBufferSource()
         this.sourceNode.buffer = this.buffer
-        this.sourceNode.connect(this.gainNode)
+        this.sourceNode.connect(this.analyserNode)
         this.sourceNode.start(0, offset)
         this.isPlaying = true
         this.isPaused = false
@@ -125,13 +148,14 @@ export class AudioPlayer {
     }
     this.sourceNode = this.audioCtx.createBufferSource()
     this.sourceNode.buffer = this.buffer
-    this.sourceNode.connect(this.gainNode)
+    this.sourceNode.connect(this.analyserNode)
     this.sourceNode.start(0, time)
     this.initEvent()
     this.startTime = this.audioCtx.currentTime - time
   }
 
   setVolume(volume: number): void {
+    if (!this.gainNode) return
     this.volume = volume
     this.gainNode.gain.value = volume
   }

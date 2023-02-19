@@ -1,8 +1,10 @@
 <template>
   <div class="bb-player">
     <div class="bb-player__left">
-      <div class="bb-player__cover">
+      <div class="bb-player__cover" @click="showVUMeter = !showVUMeter">
         <img v-if="fileImage" :src="fileImage" alt="Cover" />
+        <div v-if="showVUMeter" class="bb-player__vu-meter">
+        </div>
       </div>
       <div class="bb-player__track-infos">
         <template v-if="playQueueStore.playingFile">
@@ -77,6 +79,10 @@ import { usePlayQueueStore } from '../../../stores/play-queue.store'
 import { usePlayerStore } from '../../../stores/player.store'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
 
+const IS_SHUFFLE = 'is-shuffle'
+const IS_LOOP = 'is-loop'
+
+const showVUMeter = ref(false)
 const timeoutId = ref<NodeJS.Timeout>(null)
 const playTimeoutId = ref<NodeJS.Timeout>(null)
 const volumeBackup = ref(0)
@@ -87,6 +93,10 @@ const playerStore = usePlayerStore()
 const playlistsStore = usePlaylistsStore()
 
 onMounted(() => {
+
+  playQueueStore.shuffle = localStorage.getItem(IS_SHUFFLE) === 'true'
+  playQueueStore.loop = localStorage.getItem(IS_LOOP) === 'true'
+
   window.addEventListener('keydown', (event: Event) => {
     if (timeoutId.value) clearTimeout(timeoutId.value)
 
@@ -125,6 +135,7 @@ onMounted(() => {
   })
 })
 
+const getRMSLevel = computed(() => `${playerStore.currentVolume}%`)
 const isPaused = computed(() => playerStore.currentInstance?.getIsPaused())
 const isPlaying = computed(() => playerStore.currentInstance?.getIsPlaying())
 
@@ -174,10 +185,12 @@ const onNextFile = () => {
 
 const onShuffle = () => {
   playQueueStore.shuffle = !playQueueStore.shuffle
+  localStorage.setItem(IS_SHUFFLE, playQueueStore.shuffle)
 }
 
 const onLoop = () => {
   playQueueStore.loop = !playQueueStore.loop
+  localStorage.setItem(IS_LOOP, playQueueStore.loop)
 }
 
 const playingFile = computed(() => {
@@ -270,11 +283,22 @@ watch(
   &__cover {
     height: 6rem;
     min-width: 6rem;
+    position: relative;
 
     img {
       height: 100%;
       border-radius: $bb-border-radius-regular;
     }
+  }
+
+  &__vu-meter {
+    position: absolute;
+    height: v-bind(getRMSLevel);
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba($bb-color-white, 25%);
+    color: white;
   }
 }
 </style>
