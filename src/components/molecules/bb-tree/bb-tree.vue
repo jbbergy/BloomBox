@@ -140,6 +140,7 @@ onMounted(async () => {
     column-gap: $bb-spacing-small;
     cursor: default;
     outline: none;
+    user-select: none;
 
     &:focus,
     &:hover {

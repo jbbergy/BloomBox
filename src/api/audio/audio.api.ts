@@ -65,14 +65,20 @@ export class AudioPlayer {
     this.gainNode.connect(this.audioCtx.destination)
   }
 
+  private checkTime() {
+    const currentTime = this.audioCtx.currentTime - this.startTime
+    const time = Math.floor(currentTime)
+    const duration = Math.floor(this.buffer.duration)
+    if (time >= duration && this.events?.end) {
+      this.events.end()
+    }
+    return currentTime
+  }
+
   initEvent() {
     this.sourceNode.addEventListener('ended', () => {
       this.isEndEmitted = true
-      const currentTime = Math.floor(this.getCurrentTime())
-      const duration = Math.floor(this.buffer.duration)
-      if (currentTime >= duration && this.events?.end) {
-        this.events.end()
-      }
+      this.checkTime()
     })
   }
 
@@ -130,13 +136,7 @@ export class AudioPlayer {
 
   getCurrentTime(): number {
     if (this.audioCtx && this.buffer) {
-      const currentTime = this.audioCtx.currentTime - this.startTime
-      const time = Math.floor(currentTime)
-      const duration = Math.floor(this.buffer.duration)
-      if (time >= duration && this.events?.end && !this.isEndEmitted) {
-        this.events.end()
-      }
-      return currentTime
+      return this.checkTime()
     }
     return 0
   }

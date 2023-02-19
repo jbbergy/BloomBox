@@ -23,7 +23,6 @@ import { usePlayerStore } from '../../../stores/player.store'
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
 
 const updateValue = ref(true)
-const seekIntervalId = ref<NodeJS.Timeout>()
 const seek = ref(0)
 const progressBarValue = ref(0)
 const doUpdateSeek = ref<number | null>(null)
@@ -33,12 +32,7 @@ const playerStore = usePlayerStore()
 const playQueueStore = usePlayQueueStore()
 
 onMounted(() => {
-  seekIntervalId.value = setInterval(() => {
-    if (!playerStore.currentInstance) return
-    if (updateValue.value) {
-      seek.value = playerStore.currentInstance.getInstance()?.getCurrentTime() || 0
-    }
-  }, 100)
+  updateCurrenttime()
 })
 
 watch(updateValue, () => {
@@ -51,13 +45,15 @@ watch(updateValue, () => {
   }
 })
 
-watch(seek, (value) => {
-  if (value) {
+const updateCurrenttime = () => {
+  if (playerStore.currentInstance && updateValue.value) {
+    seek.value = playerStore.currentInstance.getInstance()?.getCurrentTime() || 0
     updateProgressBarValue()
   }
-})
+  requestAnimationFrame(updateCurrenttime)
+}
 
-function getFileDuration(duration) {
+const getFileDuration = (duration) => {
   if (!duration) return {
     m: 0,
     s: '00'

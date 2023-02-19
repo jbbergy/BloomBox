@@ -42,9 +42,10 @@ export class AudioService {
   }
 
   async play() {
-    if (!this._instance) return
-    await this._instance.loadAudio()
-    this._instance.play()
+    if (this._instance) {
+      await this._instance.loadAudio()
+      this._instance.play()
+    }
   }
 
   pause() {

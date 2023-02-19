@@ -140,6 +140,7 @@ const onPlayFile = () => {
   user-select: none;
   font-size: $bb-font-size-regular;
   outline: none;
+  user-select: none;
 
   &__cover {
     display: flex;

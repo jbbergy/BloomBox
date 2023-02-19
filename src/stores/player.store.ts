@@ -6,7 +6,6 @@ export const usePlayerStore = defineStore('player', {
     currentInstance: null as AudioService | null,
     defaultVolume: 0.5,
     currentVolume: 0,
-    intervalId: null as NodeJS.Timeout | null
   }),
   actions: {
     pause() {
@@ -20,7 +19,7 @@ export const usePlayerStore = defineStore('player', {
         requestAnimationFrame(this.updateRmsLevel)
       }
     },
-    play(filePath: string, callback: unknown) {
+    play(filePath: string, callback: CallableFunction) {
       if (this.currentInstance) {
         this.currentInstance.stop()
         this.currentInstance.destroy()
