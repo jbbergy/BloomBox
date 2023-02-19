@@ -4,8 +4,8 @@ export class AudioService {
   private _instance: AudioPlayer | null
   private _instanceId: number | undefined = undefined
 
-  constructor(file: string) {
-    this._instance = new AudioPlayer(file)
+  constructor(file: string, volume: number) {
+    this._instance = new AudioPlayer(file, volume)
   }
 
   destroy() {

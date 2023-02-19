@@ -299,6 +299,7 @@ watch(
     right: 0;
     background-color: rgba($bb-color-white, 25%);
     color: white;
+    border-radius: 0 0 $bb-border-radius-regular $bb-border-radius-regular;
   }
 }
 </style>

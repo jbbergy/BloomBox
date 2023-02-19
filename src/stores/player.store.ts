@@ -24,8 +24,7 @@ export const usePlayerStore = defineStore('player', {
         this.currentInstance.stop()
         this.currentInstance.destroy()
       }
-      this.currentInstance = new AudioService(filePath)
-      this.currentInstance.setVolume(this.defaultVolume)
+      this.currentInstance = new AudioService(filePath, this.defaultVolume)
       this.currentInstance.play()
       requestAnimationFrame(this.updateRmsLevel)
       if (callback) {
