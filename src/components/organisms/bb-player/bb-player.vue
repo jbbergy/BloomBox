@@ -84,7 +84,6 @@ const IS_LOOP = 'is-loop'
 
 const showVUMeter = ref(false)
 const timeoutId = ref<NodeJS.Timeout>(null)
-const playTimeoutId = ref<NodeJS.Timeout>(null)
 const volumeBackup = ref(0)
 const isMute = ref(false)
 
@@ -214,12 +213,9 @@ watch(
   async (value: iFile) => {
     if (value) {
       playlistsStore.currentPlaylist = playlistsStore.selectedPlaylist
-      if (playTimeoutId.value) clearTimeout(playTimeoutId.value)
-      playTimeoutId.value = setTimeout(() => {
-        playerStore.play(value.path, () => {
-          onNextFile()
-        })
-      }, 10)
+      playerStore.play(value.path, () => {
+        onNextFile()
+      })
       playQueueStore.getCurrentCover()
     }
   },
