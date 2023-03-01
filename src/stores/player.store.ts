@@ -15,7 +15,8 @@ export const usePlayerStore = defineStore('player', {
     updateRmsLevel() {
       if (this.currentInstance) {
         const newVolume = this.currentInstance.getVolume()
-        this.currentVolume = newVolume > 100 ? 100 : newVolume
+        const limitedVolume = newVolume > 100 ? 100 : newVolume
+        this.currentVolume = (limitedVolume / 70) * 100
         requestAnimationFrame(this.updateRmsLevel)
       }
     },

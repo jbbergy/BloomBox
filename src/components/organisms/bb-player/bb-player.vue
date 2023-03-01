@@ -1,24 +1,18 @@
 <template>
   <div class="bb-player">
     <div class="bb-player__left">
-      <div class="bb-player__cover" @click="showVUMeter = !showVUMeter">
+      <div class="bb-player__vu-meter">
+        <div class="bb-player__vu-meter-value" />
+      </div>
+      <div class="bb-player__cover">
         <img v-if="fileImage" :src="fileImage" alt="Cover" />
-        <div v-if="showVUMeter" class="bb-player__vu-meter">
-        </div>
       </div>
       <div class="bb-player__track-infos">
         <template v-if="playQueueStore.playingFile">
-          <div
-            @click="scrollTotitle"
-            class="bb-player__track-title"
-            tabindex="0"
-          >
+          <div @click="scrollTotitle" class="bb-player__track-title" tabindex="0">
             {{ playQueueStore.playingFile.label }}
           </div>
-          <div
-            @click="scrollTotitle"
-            class="bb-player__track-artist"
-          >
+          <div @click="scrollTotitle" class="bb-player__track-artist">
             {{ playQueueStore.playingFile.artist }}
           </div>
         </template>
@@ -62,161 +56,160 @@
 </template>
 
 <script lang="ts" setup>
-import { watch, computed, ref, onMounted } from 'vue'
-import InlineSvg from 'vue-inline-svg'
-import IconPlay from '../../../assets/icons/i-play.svg'
-import IconPause from '../../../assets/icons/i-pause.svg'
-import IconPrev from '../../../assets/icons/i-step-backward.svg'
-import IconNext from '../../../assets/icons/i-step-forward.svg'
-import IconLoop from '../../../assets/icons/i-loop.svg'
-import IconShuffle from '../../../assets/icons/i-shuffle.svg'
-import ImgCover from '../../../assets/img/cover.jpg'
-import BBTransportButton from '../../../components/atoms/bb-transport-button/bb-transport-button.vue'
-import BBProgress from '../../molecules/bb-progress/bb-progress.vue'
-import BBVolumeControl from '../../../components/molecules/bb-volume-control/bb-volume-control.vue'
-import { iFile } from 'src/services/interfaces/file.interface'
-import { usePlayQueueStore } from '../../../stores/play-queue.store'
-import { usePlayerStore } from '../../../stores/player.store'
-import { usePlaylistsStore } from '../../../stores/playlists.store'
+import { watch, computed, ref, onMounted } from 'vue';
+import InlineSvg from 'vue-inline-svg';
+import IconPlay from '../../../assets/icons/i-play.svg';
+import IconPause from '../../../assets/icons/i-pause.svg';
+import IconPrev from '../../../assets/icons/i-step-backward.svg';
+import IconNext from '../../../assets/icons/i-step-forward.svg';
+import IconLoop from '../../../assets/icons/i-loop.svg';
+import IconShuffle from '../../../assets/icons/i-shuffle.svg';
+import ImgCover from '../../../assets/img/cover.jpg';
+import BBTransportButton from '../../../components/atoms/bb-transport-button/bb-transport-button.vue';
+import BBProgress from '../../molecules/bb-progress/bb-progress.vue';
+import BBVolumeControl from '../../../components/molecules/bb-volume-control/bb-volume-control.vue';
+import { iFile } from 'src/services/interfaces/file.interface';
+import { usePlayQueueStore } from '../../../stores/play-queue.store';
+import { usePlayerStore } from '../../../stores/player.store';
+import { usePlaylistsStore } from '../../../stores/playlists.store';
 
-const IS_SHUFFLE = 'is-shuffle'
-const IS_LOOP = 'is-loop'
+const IS_SHUFFLE = 'is-shuffle';
+const IS_LOOP = 'is-loop';
 
-const showVUMeter = ref(false)
-const timeoutId = ref<NodeJS.Timeout>(null)
-const volumeBackup = ref(0)
-const isMute = ref(false)
+const showVUMeter = ref(false);
+const timeoutId = ref<NodeJS.Timeout>(null);
+const volumeBackup = ref(0);
+const isMute = ref(false);
 
-const playQueueStore = usePlayQueueStore()
-const playerStore = usePlayerStore()
-const playlistsStore = usePlaylistsStore()
+const playQueueStore = usePlayQueueStore();
+const playerStore = usePlayerStore();
+const playlistsStore = usePlaylistsStore();
 
 onMounted(() => {
-
   window.ipcRenderer.on('media-next-track', () => {
-    onNextFile()
-  })
+    onNextFile();
+  });
   window.ipcRenderer.on('media-previous-track', () => {
-    onPrevFile()
-  })
+    onPrevFile();
+  });
   window.ipcRenderer.on('media-play-pause-track', () => {
-    onPlayFile()
-  })
+    onPlayFile();
+  });
 
-  playQueueStore.shuffle = localStorage.getItem(IS_SHUFFLE) === 'true'
-  playQueueStore.loop = localStorage.getItem(IS_LOOP) === 'true'
+  playQueueStore.shuffle = localStorage.getItem(IS_SHUFFLE) === 'true';
+  playQueueStore.loop = localStorage.getItem(IS_LOOP) === 'true';
 
   window.addEventListener('keydown', (event: Event) => {
-    if (timeoutId.value) clearTimeout(timeoutId.value)
+    if (timeoutId.value) clearTimeout(timeoutId.value);
 
-    const keyCodeToPrevent = [32]
+    const keyCodeToPrevent = [32];
     if (keyCodeToPrevent.includes(event.keyCode)) {
-        event.preventDefault()
-        event.stopPropagation()
-        event.stopImmediatePropagation()
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
     }
 
     timeoutId.value = setTimeout(() => {
       if (event.keyCode === 32 || event.keyCode === 179) {
         // space / play/pause
-        onPlayFile()
+        onPlayFile();
       }
-      clearTimeout(timeoutId.value)
-    }, 1)
+      clearTimeout(timeoutId.value);
+    }, 1);
+  });
+});
 
-  })
-
-})
-
-const getRMSLevel = computed(() => `${playerStore.currentVolume}%`)
-const isPaused = computed(() => playerStore.currentInstance?.getIsPaused())
-const isPlaying = computed(() => playerStore.currentInstance?.getIsPlaying())
+const getRMSLevel = computed(() => `${playerStore.currentVolume}%`);
+const isPaused = computed(() => playerStore.currentInstance?.getIsPaused());
+const isPlaying = computed(() => playerStore.currentInstance?.getIsPlaying());
 
 const scrollTotitle = () => {
-  if (!playQueueStore.playingFile || !playlistsStore.currentPlaylist) return
-  const playlist = document.getElementById(playlistsStore.currentPlaylist.uuid)
-  if (!playlist) return
-  playlist.click()
-  playlist.focus()
+  if (!playQueueStore.playingFile || !playlistsStore.currentPlaylist) return;
+  const playlist = document.getElementById(playlistsStore.currentPlaylist.uuid);
+  if (!playlist) return;
+  playlist.click();
+  playlist.focus();
   setTimeout(() => {
-    const element = document.querySelector(`[data-uuid="${playQueueStore.playingFile.uuid}"]`)
-    if (!element) return
+    const element = document.querySelector(
+      `[data-uuid="${playQueueStore.playingFile.uuid}"]`
+    );
+    if (!element) return;
     element.scrollIntoView({
       behavior: 'smooth',
       block: 'center',
-    })
-  }, 300)
-}
+    });
+  }, 300);
+};
 
 const onPlayFile = () => {
-  if (!playQueueStore.selectedFile) return
+  if (!playQueueStore.selectedFile) return;
   if (!isPlaying.value && !isPaused.value) {
-    playQueueStore.playingFile = playQueueStore.selectedFile
-    playQueueStore.addToQueue(playlistsStore.selectedPlaylist?.files)
+    playQueueStore.playingFile = playQueueStore.selectedFile;
+    playQueueStore.addToQueue(playlistsStore.selectedPlaylist?.files);
   } else if (
-    isPlaying.value && !isPaused.value
-    || !isPlaying.value && isPaused.value
+    (isPlaying.value && !isPaused.value) ||
+    (!isPlaying.value && isPaused.value)
   ) {
-    onPauseFile()
+    onPauseFile();
   }
-}
+};
 
 const onPauseFile = () => {
-  if (!playQueueStore.playingFile) return
-  playerStore.pause()
-}
+  if (!playQueueStore.playingFile) return;
+  playerStore.pause();
+};
 
 const onPrevFile = () => {
-  if (!playQueueStore.playingFile) return
-  playQueueStore.prevFile()
-}
+  if (!playQueueStore.playingFile) return;
+  playQueueStore.prevFile();
+};
 
 const onNextFile = () => {
-  if (!playQueueStore.playingFile) return
-  playQueueStore.nextFile()
-}
+  if (!playQueueStore.playingFile) return;
+  playQueueStore.nextFile();
+};
 
 const onShuffle = () => {
-  playQueueStore.shuffle = !playQueueStore.shuffle
-  localStorage.setItem(IS_SHUFFLE, playQueueStore.shuffle)
-}
+  playQueueStore.shuffle = !playQueueStore.shuffle;
+  localStorage.setItem(IS_SHUFFLE, playQueueStore.shuffle);
+};
 
 const onLoop = () => {
-  playQueueStore.loop = !playQueueStore.loop
-  localStorage.setItem(IS_LOOP, playQueueStore.loop)
-}
+  playQueueStore.loop = !playQueueStore.loop;
+  localStorage.setItem(IS_LOOP, playQueueStore.loop);
+};
 
 const playingFile = computed(() => {
-  return playQueueStore.playingFile
-})
+  return playQueueStore.playingFile;
+});
 
 const isShuffle = computed(() => {
-  return playQueueStore.shuffle
-})
+  return playQueueStore.shuffle;
+});
 
 const isLoop = computed(() => {
-  return playQueueStore.loop
-})
+  return playQueueStore.loop;
+});
 
 const fileImage = computed(() => {
-  return playQueueStore.currentCover || ImgCover
-})
+  return playQueueStore.currentCover || ImgCover;
+});
 
 watch(
   playingFile,
   async (value: iFile) => {
     if (value) {
-      playlistsStore.currentPlaylist = playlistsStore.selectedPlaylist
+      playlistsStore.currentPlaylist = playlistsStore.selectedPlaylist;
       playerStore.play(value.path, () => {
-        onNextFile()
-      })
-      playQueueStore.getCurrentCover()
+        onNextFile();
+      });
+      playQueueStore.getCurrentCover();
     }
   },
   {
     deep: true,
   }
-)
+);
 </script>
 
 <style lang="scss">
@@ -238,11 +231,11 @@ watch(
   &__left {
     height: 6rem;
     width: 16rem;
-    display: flex;
-    flex-direction: row;
+    display: grid;
     align-items: flex-start;
     justify-content: flex-start;
     column-gap: $bb-spacing-small;
+    grid-template-columns: auto 6rem auto;
   }
 
   &__track-title {
@@ -273,7 +266,6 @@ watch(
   &__cover {
     height: 6rem;
     min-width: 6rem;
-    position: relative;
 
     img {
       height: 100%;
@@ -282,14 +274,21 @@ watch(
   }
 
   &__vu-meter {
-    position: absolute;
-    height: v-bind(getRMSLevel);
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: rgba($bb-color-white, 25%);
-    color: white;
-    border-radius: 0 0 $bb-border-radius-regular $bb-border-radius-regular;
+    position: relative;
+    height: 6rem;
+    width: 0.5rem;
+    overflow: hidden;
+    background-color: $bb-bg-color-3;
+    border-radius: $bb-border-radius-regular;
+
+    &-value {
+      position: absolute;
+      height: v-bind(getRMSLevel);
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background-color: $bb-bg-color-4;
+    }
   }
 }
 </style>
