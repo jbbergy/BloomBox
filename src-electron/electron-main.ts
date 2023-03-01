@@ -1,4 +1,4 @@
-import { app, BrowserWindow, nativeTheme, ipcMain, Menu } from 'electron'
+import { app, BrowserWindow, nativeTheme, ipcMain, Menu, globalShortcut } from 'electron'
 import path from 'path'
 import os from 'os'
 import { readMetadata } from './metadata.service'
@@ -7,6 +7,17 @@ import { readMetadata } from './metadata.service'
 const readMetadataHandler = () => {
   ipcMain.handle('metadataApi:readMetadata', async (event, file) => {
     return await readMetadata(file)
+  })
+}
+const transportShortcutsHandler = () => {
+  globalShortcut.register('MediaNextTrack', () => {
+    mainWindow.webContents.send('media-next-track')
+  })
+  globalShortcut.register('MediaPreviousTrack', () => {
+    mainWindow.webContents.send('media-previous-track')
+  })
+  globalShortcut.register('MediaPlayPause', () => {
+    mainWindow.webContents.send('media-play-pause-track')
   })
 }
 // needed in case process is undefined under Linux
@@ -35,6 +46,7 @@ function createWindow() {
     webPreferences: {
       backgroundThrottling: false,
       webSecurity: false,
+      nodeIntegration: false,
       contextIsolation: true,
       // More info: https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/electron-preload-script
       preload: path.resolve(__dirname, process.env.QUASAR_ELECTRON_PRELOAD),
@@ -53,6 +65,7 @@ function createWindow() {
       mainWindow?.webContents.closeDevTools()
     })
   }
+  transportShortcutsHandler()
 
   mainWindow.on('closed', () => {
     mainWindow = undefined
@@ -61,10 +74,12 @@ function createWindow() {
 
 app.whenReady().then(() => {
   readMetadataHandler()
+  transportShortcutsHandler()
   createWindow()
 })
 
 app.on('window-all-closed', () => {
+  globalShortcut.unregisterAll()
   if (platform !== 'darwin') {
     app.quit()
   }

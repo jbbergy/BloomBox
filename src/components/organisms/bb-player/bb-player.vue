@@ -93,13 +93,23 @@ const playlistsStore = usePlaylistsStore()
 
 onMounted(() => {
 
+  window.ipcRenderer.on('media-next-track', () => {
+    onNextFile()
+  })
+  window.ipcRenderer.on('media-previous-track', () => {
+    onPrevFile()
+  })
+  window.ipcRenderer.on('media-play-pause-track', () => {
+    onPlayFile()
+  })
+
   playQueueStore.shuffle = localStorage.getItem(IS_SHUFFLE) === 'true'
   playQueueStore.loop = localStorage.getItem(IS_LOOP) === 'true'
 
   window.addEventListener('keydown', (event: Event) => {
     if (timeoutId.value) clearTimeout(timeoutId.value)
 
-    const keyCodeToPrevent = [32, 179, 176, 177, 178]
+    const keyCodeToPrevent = [32]
     if (keyCodeToPrevent.includes(event.keyCode)) {
         event.preventDefault()
         event.stopPropagation()
@@ -110,28 +120,12 @@ onMounted(() => {
       if (event.keyCode === 32 || event.keyCode === 179) {
         // space / play/pause
         onPlayFile()
-      } else if (event.keyCode === 176) {
-        // next
-        onNextFile()
-      } else if (event.keyCode === 177) {
-        // prev
-        onPrevFile()
-      } else if (event.keyCode === 178) {
-        // mute
-        if (!isMute.value) {
-          volumeBackup.value = playerStore?.defaultVolume
-          playerStore.defaultVolume = 0
-          playerStore.currentInstance?.setVolume(playerStore.defaultVolume)
-          isMute.value = true
-        } else {
-          playerStore.defaultVolume = volumeBackup.value || 0
-          playerStore.currentInstance?.setVolume(playerStore.defaultVolume)
-          isMute.value = false
-        }
       }
       clearTimeout(timeoutId.value)
     }, 1)
+
   })
+
 })
 
 const getRMSLevel = computed(() => `${playerStore.currentVolume}%`)
