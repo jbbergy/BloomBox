@@ -1,11 +1,15 @@
 <template>
   <q-page class="home-page">
-  <div class="home-page__wrapper">
     <img
-      class="home-page__illustration"
+      class="home-page__illustration--bg"
       :src="cover"
     />
-  </div>
+    <div class="home-page__wrapper">
+      <img
+        class="home-page__illustration"
+        :src="cover"
+      />
+    </div>
   </q-page>
 </template>
 
@@ -27,15 +31,22 @@ const cover = computed(() => {
 
   return covers[pos]
 })
-const cssCover = computed(() => `url('${cover.value}')`)
 </script>
 
 <style lang="scss">
 .home-page {
   position: relative;
-  background:v-bind(cssCover) center no-repeat;
-  background-size: cover;
-  background-position: center;
+  overflow: hidden;
+
+  &__illustration {
+
+    &--bg {
+      position: absolute;
+      width: 150%;
+      top: -50%;
+      left: -25%;
+    }
+  }
 
   &__wrapper {
     display: flex;
@@ -46,7 +57,7 @@ const cssCover = computed(() => `url('${cover.value}')`)
     left: 0;
     right: 0;
     bottom: 0;
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(10px);
   }
 }
 </style>
