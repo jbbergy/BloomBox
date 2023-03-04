@@ -56,68 +56,70 @@
 </template>
 
 <script lang="ts" setup>
-import { watch, computed, ref, onMounted } from 'vue';
-import InlineSvg from 'vue-inline-svg';
-import IconPlay from '../../../assets/icons/i-play.svg';
-import IconPause from '../../../assets/icons/i-pause.svg';
-import IconPrev from '../../../assets/icons/i-step-backward.svg';
-import IconNext from '../../../assets/icons/i-step-forward.svg';
-import IconLoop from '../../../assets/icons/i-loop.svg';
-import IconShuffle from '../../../assets/icons/i-shuffle.svg';
-import ImgCover from '../../../assets/img/cover.jpg';
-import BBTransportButton from '../../../components/atoms/bb-transport-button/bb-transport-button.vue';
-import BBProgress from '../../molecules/bb-progress/bb-progress.vue';
-import BBVolumeControl from '../../../components/molecules/bb-volume-control/bb-volume-control.vue';
-import { iFile } from 'src/services/interfaces/file.interface';
-import { usePlayQueueStore } from '../../../stores/play-queue.store';
-import { usePlayerStore } from '../../../stores/player.store';
-import { usePlaylistsStore } from '../../../stores/playlists.store';
+import { watch, computed, ref, onMounted } from 'vue'
+import InlineSvg from 'vue-inline-svg'
+import IconPlay from '../../../assets/icons/i-play.svg'
+import IconPause from '../../../assets/icons/i-pause.svg'
+import IconPrev from '../../../assets/icons/i-step-backward.svg'
+import IconNext from '../../../assets/icons/i-step-forward.svg'
+import IconLoop from '../../../assets/icons/i-loop.svg'
+import IconShuffle from '../../../assets/icons/i-shuffle.svg'
+import ImgCover from '../../../assets/img/cover.jpg'
+import BBTransportButton from '../../../components/atoms/bb-transport-button/bb-transport-button.vue'
+import BBProgress from '../../molecules/bb-progress/bb-progress.vue'
+import BBVolumeControl from '../../../components/molecules/bb-volume-control/bb-volume-control.vue'
+import { iFile } from 'src/services/interfaces/file.interface'
+import { usePlayQueueStore } from '../../../stores/play-queue.store'
+import { usePlayerStore } from '../../../stores/player.store'
+import { usePlaylistsStore } from '../../../stores/playlists.store'
 
-const IS_SHUFFLE = 'is-shuffle';
-const IS_LOOP = 'is-loop';
+const IS_SHUFFLE = 'is-shuffle'
+const IS_LOOP = 'is-loop'
 
-const showVUMeter = ref(false);
-const timeoutId = ref<NodeJS.Timeout>(null);
-const volumeBackup = ref(0);
-const isMute = ref(false);
+const showVUMeter = ref(false)
+const timeoutId = ref<NodeJS.Timeout>(null)
+const volumeBackup = ref(0)
+const isMute = ref(false)
 
-const playQueueStore = usePlayQueueStore();
-const playerStore = usePlayerStore();
-const playlistsStore = usePlaylistsStore();
+const playQueueStore = usePlayQueueStore()
+const playerStore = usePlayerStore()
+const playlistsStore = usePlaylistsStore()
 
 onMounted(() => {
   window.ipcRenderer.on('media-next-track', () => {
-    onNextFile();
-  });
+    onNextFile()
+  })
   window.ipcRenderer.on('media-previous-track', () => {
-    onPrevFile();
-  });
+    onPrevFile()
+  })
   window.ipcRenderer.on('media-play-pause-track', () => {
-    onPlayFile();
-  });
+    onPlayFile()
+  })
 
-  playQueueStore.shuffle = localStorage.getItem(IS_SHUFFLE) === 'true';
-  playQueueStore.loop = localStorage.getItem(IS_LOOP) === 'true';
+  playQueueStore.shuffle = localStorage.getItem(IS_SHUFFLE) === 'true'
+  playQueueStore.loop = localStorage.getItem(IS_LOOP) === 'true'
 
   window.addEventListener('keydown', (event: Event) => {
-    if (timeoutId.value) clearTimeout(timeoutId.value);
+    if (timeoutId.value) clearTimeout(timeoutId.value)
 
-    const keyCodeToPrevent = [32];
+    if (['INPUT', 'TEXTAREA'].includes(event.target.tagName)) return
+
+    const keyCodeToPrevent = [32]
     if (keyCodeToPrevent.includes(event.keyCode)) {
-      event.preventDefault();
-      event.stopPropagation();
-      event.stopImmediatePropagation();
+      event.preventDefault()
+      event.stopPropagation()
+      event.stopImmediatePropagation()
     }
 
     timeoutId.value = setTimeout(() => {
       if (event.keyCode === 32 || event.keyCode === 179) {
         // space / play/pause
-        onPlayFile();
+        onPlayFile()
       }
-      clearTimeout(timeoutId.value);
-    }, 1);
-  });
-});
+      clearTimeout(timeoutId.value)
+    }, 1)
+  })
+})
 
 const getRMSLevel = computed(() => `${playerStore.currentVolume}%`);
 const isPaused = computed(() => playerStore.currentInstance?.getIsPaused());

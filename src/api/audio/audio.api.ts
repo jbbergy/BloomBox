@@ -58,7 +58,7 @@ export class AudioPlayer {
     this.analyserNode.fftSize = 1024
     this.analyserNode.maxDecibels = -10
     this.analyserNode.minDecibels = -100
-    this.analyserNode.smoothingTimeConstant = 0.8
+    this.analyserNode.smoothingTimeConstant = 0.7
 
     this.sourceNode.connect(this.analyserNode)
     this.analyserNode.connect(this.gainNode)

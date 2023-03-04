@@ -26,15 +26,17 @@ defineProps({
     min-width: $bb-height-regular;
     padding: $bb-spacing-small;
     border: 0;
-    background-color: $bb-bg-color-1;
     border-radius: $bb-border-radius-regular;
-    color: $bb-text-color-1;
     display: flex;
     column-gap: $bb-spacing-small;
     justify-content: center;
     align-items: center;
     outline: none;
+    color: $bb-text-color-1;
+    background-color: $bb-bg-color-1;
     font-size: $bb-font-size-regular;
+    font-weight: $bb-font-weight-bold;
+    text-transform: uppercase;
 
     &:hover {
       background-color: lighten($bb-bg-color-1, $bb-lighten-light);
