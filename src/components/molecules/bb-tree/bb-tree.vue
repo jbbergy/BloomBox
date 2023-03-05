@@ -25,19 +25,49 @@
       </div>
       <div class="bb-tree__actions">
         <template v-if="selectedNode?.uuid === playlist.uuid">
-          <BBButton @click="onDeletePlaylist(playlist.uuid)" no-bg>
-            <inline-svg :src="IconTrash" aria-label="Supprimer la playlist" />
-          </BBButton>
+          <BBContextMenu :items="menuItems" />
         </template>
       </div>
     </div>
   </div>
+    
+  <teleport to="body">
+    <BBModal 
+      v-if="isRenamePlaylistModalOpen"
+      @keyup.escape="isRenamePlaylistModalOpen = false"
+    >
+      <template #title>
+        Renommer la playlist
+        <span class="bb-tree__modal-title">{{ playlistsStore.selectedPlaylist?.label }}</span>
+      </template>
+      <template #default>
+        <BBInput
+          v-model="newPlaylistName"
+          :focus-when-ready="true"
+          placeholder="Nom de la playlist"
+          @press:enter="renamePlaylist($event)"
+        />
+      </template>
+      <template #actions>
+        <BBButton
+          @click="isRenamePlaylistModalOpen = false"
+          variant="secondary"
+        >
+          Annuler
+        </BBButton>
+        <BBButton @click="renamePlaylist">
+          Valider
+        </BBButton>
+      </template>
+    </BBModal>
+  </teleport>
 </template>
 <script lang="ts" setup>
 import { computed, onBeforeMount,onMounted, watch, ref } from 'vue'
-import InlineSvg from 'vue-inline-svg'
+import BBContextMenu from '../../atoms/bb-context-menu/bb-context-menu.vue'
+import BBInput from '../../atoms/bb-input/bb-input.vue'
 import BBButton from '../../atoms/bb-button/bb-button.vue'
-import IconTrash from '../../../assets/icons/i-trash.svg'
+import BBModal from '../../atoms/bb-modal/bb-modal.vue'
 import ImgCover from '../../../assets/img/cover.jpg'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
@@ -54,6 +84,21 @@ const playlistsStore = usePlaylistsStore()
 const playQueueStore = usePlayQueueStore()
 const playlistsService = new PlaylistsService()
 const cacheImageService = new CacheImageService()
+
+const newPlaylistName = ref<string | undefined>()
+const isRenamePlaylistModalOpen = ref(false)
+const menuItems = ref([
+  {
+    label: 'Renommer', func: async (playlistId: string) => {
+      isRenamePlaylistModalOpen.value = true
+    }
+  },
+  {
+    label: 'Supprimer', func: async (playlistId: string) => {
+      await onDeletePlaylist(playlistId)
+    }
+  }
+])
 
 watch(selectedNode, (node: iPlaylist) => {
   if (!node || !playlistsStore.playlists) return
@@ -77,6 +122,28 @@ const getPlaylistCover = (playlist: iPlaylist) => {
     return img
   }
   return ImgCover
+}
+
+const renamePlaylist = async () => { 
+  if (!newPlaylistName.value || !playlistsStore.selectedPlaylist?.uuid) return
+  let foundItem: iPlaylist | null = null
+  try {
+    foundItem = await playlistsService.findByUUID(playlistsStore.selectedPlaylist.uuid)
+  } catch (error) {
+    console.error(error)
+  }
+
+  if (!foundItem) return
+
+  foundItem.label = newPlaylistName.value
+
+  try {
+    await playlistsService.update(foundItem.key, foundItem)
+    await playlistsStore.init()
+  } catch (error) {
+    console.error(error)
+  }
+  isRenamePlaylistModalOpen.value = false
 }
 
 const onSelectNode = (playlist: iPlaylist, play = false) => {
@@ -131,6 +198,13 @@ onMounted(async () => {
 <style lang="scss">
 .bb-tree {
   padding-top: $bb-spacing-small;
+
+  &__modal{
+    
+    &-title {
+      color: $bb-text-color-3;
+    }
+  }
 
   &__item {
     display: grid;

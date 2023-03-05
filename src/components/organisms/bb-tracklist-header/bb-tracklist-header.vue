@@ -34,11 +34,6 @@ const nbFiles = computed(() => {
   return playlistsStore.selectedPlaylist?.files?.length || 0
 })
 
-const playlistCover = computed(() => {
-  return playlistsStore.selectedPlaylist?.img || ImgCover
-})
-
-
 const getPlaylistCover = (playlist: iPlaylist) => {
   let img = ImgCover
   if (playlist.files && playlist.files.length > 0 && playlist.files[0].album) {

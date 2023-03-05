@@ -96,7 +96,7 @@ export class PlaylistsService {
     await deleteDB(DATABASE_NAME)
   }
 
-  async findByUUID(uuid: string) {
+  async findByUUID(uuid: string): Promise<iPlaylist> {
     const db = await this.dbPromise
     const tx = db.transaction(PLAYLIST_STORE_NAME, 'readonly')
     const store = tx.objectStore(PLAYLIST_STORE_NAME)
