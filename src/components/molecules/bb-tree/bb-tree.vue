@@ -18,7 +18,10 @@
       tabindex="0"
     >
       <div class="bb-tree__img">
-        <img :src="playlistsStore.getPlaylistCover(playlist)"/>
+        <img
+          :src="playlistsStore.getPlaylistCover(playlist)"
+          @error="onCoverLoadError($event)"
+        />
       </div>
       <div class="bb-tree__label">
         {{ playlist.label }}
@@ -79,6 +82,7 @@ import BBContextMenu from '../../atoms/bb-context-menu/bb-context-menu.vue'
 import BBInput from '../../atoms/bb-input/bb-input.vue'
 import BBButton from '../../atoms/bb-button/bb-button.vue'
 import BBModal from '../../atoms/bb-modal/bb-modal.vue'
+import ImgCover from '../../../assets/img/cover.jpg'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
 import { PlaylistsService } from '../../../services/playlists/playlists.service'
@@ -131,6 +135,13 @@ const hasPlayists = computed(() => {
 })
 
 const currentPlaylistId = computed(() => playlistsStore.currentPlaylist?.uuid)
+
+const onCoverLoadError = (event) => {
+  if (event.target) {
+    const target = event.target as HTMLElement
+    target.src = ImgCover
+  }
+}
 
 const updatePlaylist = async () => { 
   if (!playlistsStore.selectedPlaylist?.uuid) return

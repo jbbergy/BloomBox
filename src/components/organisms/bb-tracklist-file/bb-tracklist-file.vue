@@ -17,7 +17,12 @@
       <inline-svg :src="IconPlay" aria-label="Lire ce titre" />
     </div>
     <div class="bb-tracklist-file__cover">
-      <img v-if="geTrackPicture" :src="geTrackPicture" alt="Cover" />
+      <img
+        v-if="geTrackPicture"
+        :src="geTrackPicture"
+        alt="Cover"
+        @error="onCoverLoadError($event)"
+      />
     </div>
     <div class="bb-tracklist-file__title">
       {{ file.label }}
@@ -41,6 +46,7 @@ import { PropType, computed /*, onUnmounted*/, onBeforeMount, onMounted, ref, wa
 import { iFile } from 'src/services/interfaces/file.interface'
 import InlineSvg from 'vue-inline-svg'
 import IconPlay from '../../../assets/icons/i-play.svg'
+import ImgCover from '../../../assets/img/cover.jpg'
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
 import { CacheImageService } from '../../../services/cache/images.cache.service'
@@ -93,6 +99,13 @@ const trackTime = computed(() => {
     return '--:--'
   }
 })
+
+const onCoverLoadError = (event) => {
+  if (event.target) {
+    const target = event.target as HTMLElement
+    target.src = ImgCover
+  }
+}
 
 const updatePicture = () => {
   trackPicture.value = cacheImageService.getFromCache(props?.file?.album || '') || PicturePlaceholder
