@@ -47,7 +47,6 @@ import BBButton from '../../atoms/bb-button/bb-button.vue'
 import BBInput from '../../atoms/bb-input/bb-input.vue'
 import BBModal from '../../atoms/bb-modal/bb-modal.vue'
 import IconPlus from '../../../assets/icons/i-plus.svg'
-import CoverImg from '../../../assets/img/cover.jpg'
 
 const playlistsStore = usePlaylistsStore()
 const isCreateModalOpen = ref(false)
@@ -68,7 +67,6 @@ function createPlaylist() {
 
   const newPlaylist: iPlaylist = {
     label: playlistName.value,
-    img: CoverImg,
     uuid: uuid(),
   }
 

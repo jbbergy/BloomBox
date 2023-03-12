@@ -1,6 +1,9 @@
 <template>
   <div class="bb-context-menu">
-    <BBButton @click="showItems = !showItems">
+    <BBButton
+      @click="showItems = !showItems"
+      no-bg
+    >
       <div class="bb-context-menu__dots">
         <div class="bb-context-menu__dot"></div>
         <div class="bb-context-menu__dot"></div>
@@ -65,6 +68,7 @@ const callFunction = async (func: CallableFunction) => {
     right: 0;
 
     &-item {
+      width: 100%;
       padding: $bb-spacing-small $bb-spacing-regular;
       color: $bb-text-color-4;
       font-weight: $bb-font-weight-bold;

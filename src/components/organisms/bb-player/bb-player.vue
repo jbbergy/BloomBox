@@ -76,10 +76,7 @@ import { usePlaylistsStore } from '../../../stores/playlists.store'
 const IS_SHUFFLE = 'is-shuffle'
 const IS_LOOP = 'is-loop'
 
-const showVUMeter = ref(false)
 const timeoutId = ref<NodeJS.Timeout>(null)
-const volumeBackup = ref(0)
-const isMute = ref(false)
 
 const playQueueStore = usePlayQueueStore()
 const playerStore = usePlayerStore()

@@ -76,6 +76,10 @@ onMounted(() => {
     font-weight: $bb-font-weight-bold;
   }
 
+  &__body {
+    padding: $bb-spacing-small 0;
+  }
+
   &__actions {
     display: flex;
     column-gap: $bb-spacing-small;

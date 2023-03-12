@@ -8,6 +8,7 @@ import { iFile } from '../services/interfaces/file.interface'
 import { PlaylistsService } from '../services/playlists/playlists.service'
 import { readMetadata } from '../services/metadata/metadata.service'
 import { CacheImageService } from '../services/cache/images.cache.service'
+import ImgCover from '../assets/img/cover.jpg'
 
 let playlistService: PlaylistsService | null = null
 const cacheImageService = new CacheImageService()
@@ -63,6 +64,17 @@ export const usePlaylistsStore = defineStore('playlists', {
         }
       }
       return result
+    },
+    getPlaylistCover: () => (playlist: iPlaylist) => {
+      const labelCover = cacheImageService.getFromCache(playlist.label)
+      let albumCover = null
+      if (playlist.files?.length > 0) {
+        const firstfile = playlist.files[0] as iFile
+        albumCover = cacheImageService.getFromCache(firstfile.album)
+      }
+      const cover = labelCover || albumCover
+      const img = cover || ImgCover
+      return img
     }
   },
   actions: {
@@ -201,7 +213,7 @@ export const usePlaylistsStore = defineStore('playlists', {
 
       return file
     },
-    async addFilesToPlaylist(files: iFile[], playlist: iPlaylist) {
+    async addFilesToPlaylist(files: iFile[]) {
       this.refreshCovers = false
       if (!playlistService) {
         playlistService = new PlaylistsService()
@@ -210,7 +222,7 @@ export const usePlaylistsStore = defineStore('playlists', {
       if (files?.length <= 0) return
       const formattedFiles = Array.from(files)
 
-      const newPlaylist: iPlaylist = { ...playlist }
+      const newPlaylist: iPlaylist = { ...this.selectedPlaylist }
       await Promise.all(formattedFiles.map(async (file) => {
         if (!newPlaylist.files) newPlaylist.files = []
         const result = await this.formatFile(file)
@@ -256,5 +268,18 @@ export const usePlaylistsStore = defineStore('playlists', {
       await this.refreshCache()
       this.refreshCovers = true
     },
+    async updateCover(coverFile) {
+      return new Promise((resolve) => {
+        const reader = new FileReader()
+        let base64 = null
+        reader.onload = (fileLoadedEvent) => {
+          base64 = fileLoadedEvent.target.result
+          cacheImageService.addToCache(this.selectedPlaylist?.label, base64)
+          cacheImageService.setForceUpdate()
+          resolve(base64)
+        }
+        reader.readAsDataURL(coverFile)
+      })
+    }
   },
 })

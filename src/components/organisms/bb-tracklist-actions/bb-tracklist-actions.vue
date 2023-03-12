@@ -25,7 +25,7 @@ const addTracks = () => {
 
   input.onchange = e => {
     if (playlistsStore.selectedPlaylist && e?.target?.files) {
-      playlistsStore.addFilesToPlaylist(e.target.files, playlistsStore.selectedPlaylist)
+      playlistsStore.addFilesToPlaylist(e.target.files)
     }
   }
 

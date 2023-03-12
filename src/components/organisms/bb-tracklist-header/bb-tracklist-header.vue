@@ -4,7 +4,7 @@
     v-if="playlistsStore.selectedPlaylist"
   >
     <img
-      :src="getPlaylistCover(playlistsStore.selectedPlaylist)"
+      :src="playlistsStore.getPlaylistCover(playlistsStore.selectedPlaylist)"
       class="bb-tracklist-header__cover"
     />
     <div class="bb-tracklist-header__text">
@@ -21,26 +21,14 @@
 </template>
 
 <script lang="ts" setup>
-import { iPlaylist } from '../../../services/interfaces/playlist.interface'
 import { computed } from 'vue'
-import ImgCover from '../../../assets/img/cover.jpg'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
-import { CacheImageService } from '../../../services/cache/images.cache.service'
 
 const playlistsStore = usePlaylistsStore()
-const cacheImageService = new CacheImageService()
 
 const nbFiles = computed(() => {
   return playlistsStore.selectedPlaylist?.files?.length || 0
 })
-
-const getPlaylistCover = (playlist: iPlaylist) => {
-  let img = ImgCover
-  if (playlist.files && playlist.files.length > 0 && playlist.files[0].album) {
-    img = cacheImageService.getFromCache(playlist.files[0].album)
-  }
-  return img
-}
 
 </script>
 

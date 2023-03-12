@@ -18,7 +18,7 @@
       tabindex="0"
     >
       <div class="bb-tree__img">
-        <img :src="getPlaylistCover(playlist)"/>
+        <img :src="playlistsStore.getPlaylistCover(playlist)"/>
       </div>
       <div class="bb-tree__label">
         {{ playlist.label }}
@@ -33,29 +33,40 @@
     
   <teleport to="body">
     <BBModal 
-      v-if="isRenamePlaylistModalOpen"
-      @keyup.escape="isRenamePlaylistModalOpen = false"
+      v-if="isEditPlaylistModalOpen"
+      @keyup.escape="isEditPlaylistModalOpen = false"
     >
       <template #title>
-        Renommer la playlist
+        Modifier la playlist
         <span class="bb-tree__modal-title">{{ playlistsStore.selectedPlaylist?.label }}</span>
       </template>
       <template #default>
-        <BBInput
-          v-model="newPlaylistName"
-          :focus-when-ready="true"
-          placeholder="Nom de la playlist"
-          @press:enter="renamePlaylist($event)"
-        />
+        <div>
+          <img
+            class="bb-tree__modal-preview"
+            :src="modalCoverPreview"
+            tabindex="0"
+            @keyup.enter="editPlaylistcover"
+            @click="editPlaylistcover"
+          />
+        </div>
+        <div>
+          <BBInput
+            v-model="newPlaylistName"
+            :focus-when-ready="true"
+            placeholder="Nom de la playlist"
+            @press:enter="updatePlaylist"
+          />
+        </div>
       </template>
       <template #actions>
         <BBButton
-          @click="isRenamePlaylistModalOpen = false"
+          @click="isEditPlaylistModalOpen = false"
           variant="secondary"
         >
           Annuler
         </BBButton>
-        <BBButton @click="renamePlaylist">
+        <BBButton @click="updatePlaylist">
           Valider
         </BBButton>
       </template>
@@ -68,7 +79,6 @@ import BBContextMenu from '../../atoms/bb-context-menu/bb-context-menu.vue'
 import BBInput from '../../atoms/bb-input/bb-input.vue'
 import BBButton from '../../atoms/bb-button/bb-button.vue'
 import BBModal from '../../atoms/bb-modal/bb-modal.vue'
-import ImgCover from '../../../assets/img/cover.jpg'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
 import { PlaylistsService } from '../../../services/playlists/playlists.service'
@@ -76,21 +86,21 @@ import { useRouter } from 'vue-router'
 import { iPlaylist } from '../../../services/interfaces/playlist.interface'
 import { iFile } from '../../../services/interfaces/file.interface'
 import { getRandomValue } from '../../../utils/random'
-import { CacheImageService } from '../../../services/cache/images.cache.service'
 const selectedNode = ref<iPlaylist>()
 
 const router = useRouter()
 const playlistsStore = usePlaylistsStore()
 const playQueueStore = usePlayQueueStore()
 const playlistsService = new PlaylistsService()
-const cacheImageService = new CacheImageService()
 
+const newPlaylistCover = ref()
+const isUpdatePlaylistCover = ref(false)
 const newPlaylistName = ref<string | undefined>()
-const isRenamePlaylistModalOpen = ref(false)
+const isEditPlaylistModalOpen = ref(false)
 const menuItems = ref([
   {
-    label: 'Renommer', func: async (playlistId: string) => {
-      isRenamePlaylistModalOpen.value = true
+    label: 'Modifier', func: async () => {
+      isEditPlaylistModalOpen.value = true
     }
   },
   {
@@ -107,6 +117,12 @@ watch(selectedNode, (node: iPlaylist) => {
   router.push({ name: 'tracklist' })
 })
 
+const modalCoverPreview = computed(() => {
+  const newCover = newPlaylistCover.value?.path
+  const oldCover = playlistsStore.getPlaylistCover(playlistsStore.selectedPlaylist as iPlaylist)
+  return newCover || oldCover
+})
+
 const hasPlayists = computed(() => {
   if (playlistsStore.filteredPlaylists) {
     return playlistsStore.filteredPlaylists?.length > 0
@@ -116,34 +132,33 @@ const hasPlayists = computed(() => {
 
 const currentPlaylistId = computed(() => playlistsStore.currentPlaylist?.uuid)
 
-const getPlaylistCover = (playlist: iPlaylist) => {
-  if (playlist.files && playlist.files.length > 0 && playlist.files[0].album) {
-    const img = cacheImageService.getFromCache(playlist.files[0].album)
-    return img
+const updatePlaylist = async () => { 
+  if (!playlistsStore.selectedPlaylist?.uuid) return
+  if (newPlaylistName.value) {
+    let foundItem: iPlaylist | null = null
+    try {
+      foundItem = await playlistsService.findByUUID(playlistsStore.selectedPlaylist.uuid)
+    } catch (error) {
+      console.error(error)
+    }
+
+    if (!foundItem) return
+
+    foundItem.label = newPlaylistName.value
+
+    try {
+      await playlistsService.update(foundItem.key, foundItem)
+      await playlistsStore.init()
+    } catch (error) {
+      console.error(error)
+    }
   }
-  return ImgCover
-}
 
-const renamePlaylist = async () => { 
-  if (!newPlaylistName.value || !playlistsStore.selectedPlaylist?.uuid) return
-  let foundItem: iPlaylist | null = null
-  try {
-    foundItem = await playlistsService.findByUUID(playlistsStore.selectedPlaylist.uuid)
-  } catch (error) {
-    console.error(error)
+  if (isUpdatePlaylistCover.value) {
+    await playlistsStore.updateCover(newPlaylistCover.value)
   }
-
-  if (!foundItem) return
-
-  foundItem.label = newPlaylistName.value
-
-  try {
-    await playlistsService.update(foundItem.key, foundItem)
-    await playlistsStore.init()
-  } catch (error) {
-    console.error(error)
-  }
-  isRenamePlaylistModalOpen.value = false
+  isUpdatePlaylistCover.value = false
+  isEditPlaylistModalOpen.value = false
 }
 
 const onSelectNode = (playlist: iPlaylist, play = false) => {
@@ -178,6 +193,24 @@ const onDeletePlaylist = async (playlistId: string) => {
   }
 }
 
+const editPlaylistcover = () => {
+  if (playlistsStore.selectedPlaylist) {
+    let input = document.createElement('input')
+    input.type = 'file'
+    input.accept = 'image/jpeg,image/png,image/gif'
+    input.multiple = false
+
+    input.onchange = async (e) => {
+      if (playlistsStore.selectedPlaylist && e?.target?.files?.length > 0) {
+        newPlaylistCover.value = e.target.files[0]
+        isUpdatePlaylistCover.value = true
+      }
+    }
+
+    input.click()
+  }
+}
+
 onBeforeMount(async () => {
   try {
     await playlistsService.init()
@@ -203,6 +236,11 @@ onMounted(async () => {
     
     &-title {
       color: $bb-text-color-3;
+    }
+
+    &-preview {
+      height: 5.282rem;
+      border-radius: $bb-border-radius-regular;
     }
   }
 
