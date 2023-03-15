@@ -47,20 +47,24 @@ export const usePlaylistsStore = defineStore('playlists', {
     currentPlaylist: null as iPlaylist | null,
     needCacheUpdate: false,
     refreshCovers: false,
-    sortOrder: 'ASC',
+    sortOrder: 'ORDER' as string,
   }),
   getters: {
     filteredPlaylists: (state) => {
       if (!state.playlists) return []
-      let result: iPlaylist[] = state.playlists
+      let result: iPlaylist[] = [...state.playlists]
+
       if (state.filter) {
         result = result?.filter(p => p.label.toLowerCase().indexOf(state.filter.toLowerCase()) > -1)
       }
+
       if (state.sortOrder && result) {
         if (state.sortOrder === 'ASC') {
           result = result.sort((a, b) => a.label.localeCompare(b.label))
         } else if (state.sortOrder === 'DESC') {
           result = result.sort((a, b) => b.label.localeCompare(a.label))
+        } else {
+          result = result.sort((a, b) => a.order - b.order)
         }
       }
       return result
@@ -79,6 +83,7 @@ export const usePlaylistsStore = defineStore('playlists', {
   },
   actions: {
     async init() {
+
       this.needCacheUpdate = false
 
       if (!playlistService) {

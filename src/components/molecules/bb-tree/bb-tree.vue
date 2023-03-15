@@ -4,13 +4,16 @@
       class="bb-tree"
   >
     <div
-      v-for="playlist in playlistsStore.filteredPlaylists"
+      v-for="(playlist, idx) in filteredPlaylists"
       :key="playlist.uuid"
       :id="playlist.uuid"
       :class="[
         'bb-tree__item',
         currentPlaylistId === playlist.uuid && 'bb-tree__item--selected'
       ]"
+      @dragstart="onDragStart(playlist)"
+      @dragover.prevent @drop="onDrop(playlist, idx)"
+      :draggable="true"
       @click="onSelectNode(playlist)"
       @dblclick="onSelectNode(playlist, true)"
       @keypress.space="onSelectNode(playlist)"
@@ -97,6 +100,8 @@ const playlistsStore = usePlaylistsStore()
 const playQueueStore = usePlayQueueStore()
 const playlistsService = new PlaylistsService()
 
+const firstPlaylistsLoad = ref(true)
+const draggingElement = ref<iPlaylist>()
 const newPlaylistCover = ref()
 const isUpdatePlaylistCover = ref(false)
 const newPlaylistName = ref<string | undefined>()
@@ -114,13 +119,6 @@ const menuItems = ref([
   }
 ])
 
-watch(selectedNode, (node: iPlaylist) => {
-  if (!node || !playlistsStore.playlists) return
-  const playlist: iPlaylist | null = playlistsStore.playlists.find((p) => p.uuid === node.uuid) || null
-  playlistsStore.selectedPlaylist = playlist
-  router.push({ name: 'tracklist' })
-})
-
 const modalCoverPreview = computed(() => {
   const newCover = newPlaylistCover.value?.path
   const oldCover = playlistsStore.getPlaylistCover(playlistsStore.selectedPlaylist as iPlaylist)
@@ -128,10 +126,14 @@ const modalCoverPreview = computed(() => {
 })
 
 const hasPlayists = computed(() => {
-  if (playlistsStore.filteredPlaylists) {
-    return playlistsStore.filteredPlaylists?.length > 0
+  if (filteredPlaylists.value) {
+    return filteredPlaylists.value?.length > 0
   }
   return null
+})
+
+const filteredPlaylists = computed(() => {
+  return playlistsStore.filteredPlaylists
 })
 
 const currentPlaylistId = computed(() => playlistsStore.currentPlaylist?.uuid)
@@ -141,6 +143,37 @@ const onCoverLoadError = (event) => {
     const target = event.target as HTMLElement
     target.src = ImgCover
   }
+}
+
+const onDragStart = (playlist: iPlaylist) => {
+  draggingElement.value = playlist
+}
+
+const onDrop = (playlist: iPlaylist, index: number) => {
+  if (!draggingElement.value) return
+  updatePlaylistOrder(draggingElement.value, index)
+}
+
+const updatePlaylistOrder = async (movedPlaylist: iPlaylist, newIndex: number) => {
+  if (!movedPlaylist || !playlistsStore.playlists) return
+
+  const replacedPlaylist = playlistsStore.playlists.find((playlist: iPlaylist) => playlist.order === newIndex)
+  const asc = movedPlaylist.order < replacedPlaylist?.order
+  const newPlaylists = playlistsStore.playlists.map((playlist:iPlaylist, index: number) => {
+    const order = playlist.order || index
+
+    if (playlist.uuid === movedPlaylist.uuid) {
+      return {...movedPlaylist, order: replacedPlaylist?.order }
+    } else if (asc && order > movedPlaylist.order && order <= replacedPlaylist.order) {
+      return {...playlist, order: order > 0 ? order - 1 : order }
+    } else if (!asc && order < movedPlaylist.order && order >= replacedPlaylist.order) {
+      return {...playlist, order: order > 0 ? order + 1 : order }
+    } else {
+      return {...playlist}
+    }
+  })
+
+  playlistsStore.playlists = newPlaylists
 }
 
 const updatePlaylist = async () => { 
@@ -222,6 +255,29 @@ const editPlaylistcover = () => {
   }
 }
 
+watch(selectedNode, (node: iPlaylist) => {
+  if (!node || !playlistsStore.playlists) return
+  const playlist: iPlaylist | null = playlistsStore.playlists.find((p) => p.uuid === node.uuid) || null
+  playlistsStore.selectedPlaylist = playlist
+  router.push({ name: 'tracklist' })
+})
+
+watch(filteredPlaylists, (playlists: iPlaylist[]) => {
+  if (playlists && !firstPlaylistsLoad.value) {
+    playlists.forEach(async (playlist) => {
+      try {
+        await playlistsService.update(playlist.key, playlist)
+        console.info('playlist updated successfuly', playlist.key, playlist.label)
+        } catch(error) {
+        console.error('Error updating playlist', playlist.key, playlist.label)
+      }
+    })
+  }
+  firstPlaylistsLoad.value = false
+}, {
+  deep: true
+})
+
 onBeforeMount(async () => {
   try {
     await playlistsService.init()
@@ -229,6 +285,7 @@ onBeforeMount(async () => {
     console.error(error)
   }
 })
+
 onMounted(async () => {
   try {
     await playlistsStore.init()
@@ -236,7 +293,6 @@ onMounted(async () => {
     console.error(error)
   }
 })
-
 </script>
 
 <style lang="scss">
