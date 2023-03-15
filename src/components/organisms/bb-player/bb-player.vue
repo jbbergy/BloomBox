@@ -5,7 +5,12 @@
         <div class="bb-player__vu-meter-value" />
       </div>
       <div class="bb-player__cover">
-        <img v-if="fileImage" :src="fileImage" alt="Cover" />
+        <img
+          v-if="fileImage"
+          :src="fileImage"
+          alt="Cover"
+          @error="onCoverError"
+        />
       </div>
       <div class="bb-player__track-infos">
         <template v-if="playQueueStore.playingFile">
@@ -76,6 +81,7 @@ import { usePlaylistsStore } from '../../../stores/playlists.store'
 const IS_SHUFFLE = 'is-shuffle'
 const IS_LOOP = 'is-loop'
 
+const isCoverOnError = ref(false)
 const timeoutId = ref<NodeJS.Timeout>(null)
 
 const playQueueStore = usePlayQueueStore()
@@ -122,82 +128,88 @@ const getRMSLevel = computed(() => `${playerStore.currentVolume}%`);
 const isPaused = computed(() => playerStore.currentInstance?.getIsPaused());
 const isPlaying = computed(() => playerStore.currentInstance?.getIsPlaying());
 
+const onCoverError = () => {
+  isCoverOnError.value = true
+}
+
 const scrollTotitle = () => {
-  if (!playQueueStore.playingFile || !playlistsStore.currentPlaylist) return;
-  const playlist = document.getElementById(playlistsStore.currentPlaylist.uuid);
-  if (!playlist) return;
-  playlist.click();
-  playlist.focus();
+  if (!playQueueStore.playingFile || !playlistsStore.currentPlaylist) return
+  const playlist = document.getElementById(playlistsStore.currentPlaylist.uuid)
+  if (!playlist) return
+  playlist.click()
+  playlist.focus()
   setTimeout(() => {
     const element = document.querySelector(
       `[data-uuid="${playQueueStore.playingFile.uuid}"]`
     );
-    if (!element) return;
+    if (!element) return
     element.scrollIntoView({
       behavior: 'smooth',
       block: 'center',
-    });
-  }, 300);
-};
+    })
+  }, 300)
+}
 
 const onPlayFile = () => {
-  if (!playQueueStore.selectedFile) return;
+  if (!playQueueStore.selectedFile) return
   if (!isPlaying.value && !isPaused.value) {
-    playQueueStore.playingFile = playQueueStore.selectedFile;
-    playQueueStore.addToQueue(playlistsStore.selectedPlaylist?.files);
+    playQueueStore.playingFile = playQueueStore.selectedFile
+    playQueueStore.addToQueue(playlistsStore.selectedPlaylist?.files)
   } else if (
     (isPlaying.value && !isPaused.value) ||
     (!isPlaying.value && isPaused.value)
   ) {
-    onPauseFile();
+    onPauseFile()
   }
-};
+}
 
 const onPauseFile = () => {
-  if (!playQueueStore.playingFile) return;
-  playerStore.pause();
-};
+  if (!playQueueStore.playingFile) return
+  playerStore.pause()
+}
 
 const onPrevFile = () => {
-  if (!playQueueStore.playingFile) return;
-  playQueueStore.prevFile();
-};
+  if (!playQueueStore.playingFile) return
+  playQueueStore.prevFile()
+}
 
 const onNextFile = () => {
-  if (!playQueueStore.playingFile) return;
-  playQueueStore.nextFile();
-};
+  if (!playQueueStore.playingFile) return
+  playQueueStore.nextFile()
+}
 
 const onShuffle = () => {
-  playQueueStore.shuffle = !playQueueStore.shuffle;
-  localStorage.setItem(IS_SHUFFLE, playQueueStore.shuffle);
-};
+  playQueueStore.shuffle = !playQueueStore.shuffle
+  localStorage.setItem(IS_SHUFFLE, playQueueStore.shuffle)
+}
 
 const onLoop = () => {
-  playQueueStore.loop = !playQueueStore.loop;
-  localStorage.setItem(IS_LOOP, playQueueStore.loop);
-};
+  playQueueStore.loop = !playQueueStore.loop
+  localStorage.setItem(IS_LOOP, playQueueStore.loop)
+}
 
 const playingFile = computed(() => {
-  return playQueueStore.playingFile;
-});
+  return playQueueStore.playingFile
+})
 
 const isShuffle = computed(() => {
-  return playQueueStore.shuffle;
-});
+  return playQueueStore.shuffle
+})
 
 const isLoop = computed(() => {
-  return playQueueStore.loop;
-});
+  return playQueueStore.loop
+})
 
 const fileImage = computed(() => {
-  return playQueueStore.currentCover || ImgCover;
-});
+  if (isCoverOnError.value) return ImgCover
+  return playQueueStore.currentCover || ImgCover
+})
 
 watch(
   playingFile,
   async (value: iFile) => {
     if (value) {
+      isCoverOnError.value = false
       playlistsStore.currentPlaylist = playlistsStore.selectedPlaylist;
       playerStore.play(value.path, () => {
         onNextFile();
