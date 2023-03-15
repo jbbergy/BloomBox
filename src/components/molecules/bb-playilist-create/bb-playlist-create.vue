@@ -68,6 +68,7 @@ function createPlaylist() {
   const newPlaylist: iPlaylist = {
     label: playlistName.value,
     uuid: uuid(),
+    order: (playlistsStore.playlists?.length || -1 ) + 1
   }
 
   playlistsStore.create(newPlaylist)

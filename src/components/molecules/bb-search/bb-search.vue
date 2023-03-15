@@ -40,8 +40,9 @@ const filterValue = computed(() => playlistsStore.filter)
 
 watch(filterValue, (value) => {
   if (value === ':refresh') {
-    console.info('force cache refresh')
-    cacheImageService.setForceUpdate()
+    if (confirm('Rafraichir le cache des images au prochain redémarrage de l\'application ?')) {
+      cacheImageService.setForceUpdate()
+    }
   }
 })
 
@@ -51,9 +52,11 @@ const goHome = () => {
 
 const sortPlaylists = () => {
   const sortOrder = playlistsStore.sortOrder
-  if (!sortOrder || sortOrder === 'ASC') {
+  if (sortOrder === 'ASC') {
     playlistsStore.sortOrder = 'DESC'
-  } else {
+  } else if (sortOrder === 'DESC') {
+    playlistsStore.sortOrder = 'ORDER'
+  } else if (sortOrder === 'ORDER') {
     playlistsStore.sortOrder = 'ASC'
   }
 }

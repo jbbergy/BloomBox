@@ -2,10 +2,9 @@
 
   <div v-if="showDebug" class="data-debug">
     <button @click="showDebug = false">Close</button>
-    <pre>
-      {{ playlistsStore.playlists?.find(p => p.label === 'Corc') }}<br>
-      <br>
-    </pre>
+    <div v-for="(playlist, index) in playlistsStore.filteredPlaylists" :key="playlist.order">
+      {{ index }} - {{ playlist.order }} - {{ playlist.label }}
+    </div>
   </div>
   <q-layout view="hHh lpR lFf">
 
@@ -59,14 +58,13 @@ watch(leftDrawerOpen, () => {
   position: fixed;
   top: 0.5rem;
   right: 0.5rem;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.8);
   border-radius: 0.5rem;
   padding: 0.5rem;
-  width: 400px;
+  width: 500px;
   z-index: 2100;
-  pointer-events: none;
-  opacity: 0.5;
-
+  overflow: auto;
+  height: 645px;
   button {
     pointer-events: all;
   }
