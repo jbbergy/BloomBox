@@ -5,6 +5,17 @@
         <div class="bb-player__vu-meter-value" />
       </div>
       <div class="bb-player__cover">
+        <BBTransportButton
+          v-if="hasFileToPlay"
+          @click="toggleFav()"
+          no-bg
+          class="bb-player__fav-btn"
+        >
+          <inline-svg
+            :src="favIcon"
+            aria-label="Ajouter/Supprimer des favoris"
+          />
+        </BBTransportButton>
         <img
           v-if="fileImage"
           :src="fileImage"
@@ -69,6 +80,8 @@ import IconPrev from '../../../assets/icons/i-step-backward.svg'
 import IconNext from '../../../assets/icons/i-step-forward.svg'
 import IconLoop from '../../../assets/icons/i-loop.svg'
 import IconShuffle from '../../../assets/icons/i-shuffle.svg'
+import IconHeart from '../../../assets/icons/heart.svg'
+import IconHeartFilled from '../../../assets/icons/heart-filled.svg'
 import ImgCover from '../../../assets/img/cover.jpg'
 import BBTransportButton from '../../../components/atoms/bb-transport-button/bb-transport-button.vue'
 import BBProgress from '../../molecules/bb-progress/bb-progress.vue'
@@ -77,6 +90,7 @@ import { iFile } from 'src/services/interfaces/file.interface'
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
 import { usePlayerStore } from '../../../stores/player.store'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
+import { iPlaylist } from 'src/services/interfaces/playlist.interface'
 
 const IS_SHUFFLE = 'is-shuffle'
 const IS_LOOP = 'is-loop'
@@ -127,9 +141,32 @@ onMounted(() => {
 const getRMSLevel = computed(() => `${playerStore.currentVolume}%`);
 const isPaused = computed(() => playerStore.currentInstance?.getIsPaused());
 const isPlaying = computed(() => playerStore.currentInstance?.getIsPlaying());
+const favIcon = computed(() => isFav.value ? IconHeartFilled : IconHeart )
+const hasFileToPlay = computed(() => playQueueStore.playingFile )
+const isFav = computed(() => {
+  const playlistFav = playlistsStore.playlists?.find((playlist: iPlaylist) => playlist.label === 'Titres likés')
 
+  if (playlistFav?.files) {
+    const fileIndex = playlistFav.files.findIndex((file: iFile) => file.uuid === playQueueStore.playingFile?.uuid)
+    return fileIndex > -1
+  }
+  return false
+})
 const onCoverError = () => {
   isCoverOnError.value = true
+}
+
+const toggleFav = () => {
+  console.log('toggleFav')
+  console.log('isFav', isFav.value)
+  console.log('playingFile', playQueueStore.playingFile)
+  if(isFav.value && playQueueStore.playingFile) {
+    playlistsStore.removeFilefromFav(playQueueStore.playingFile)
+    isFav.value = false
+  } else if(!isFav.value && playQueueStore.playingFile) {
+    playlistsStore.addFileToFav(playQueueStore.playingFile)
+    isFav.value = true
+  }
 }
 
 const scrollTotitle = () => {
@@ -275,12 +312,23 @@ watch(
   }
 
   &__cover {
+    position: relative;
     height: 6rem;
     min-width: 6rem;
 
     img {
       height: 100%;
       border-radius: $bb-border-radius-regular;
+    }
+  }
+
+  &__fav-btn {
+    position: absolute;
+    right: -2.75rem;
+    bottom: -0.75rem;
+
+    svg {
+      width: 1rem;
     }
   }
 

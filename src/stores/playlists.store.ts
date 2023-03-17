@@ -9,7 +9,9 @@ import { PlaylistsService } from '../services/playlists/playlists.service'
 import { readMetadata } from '../services/metadata/metadata.service'
 import { CacheImageService } from '../services/cache/images.cache.service'
 import ImgCover from '../assets/img/cover.jpg'
+import ImgFavCover from '../assets/img/fav-cover.png'
 
+const FAV_LABEL = 'Titres likés'
 let playlistService: PlaylistsService | null = null
 const cacheImageService = new CacheImageService()
 
@@ -77,14 +79,18 @@ export const usePlaylistsStore = defineStore('playlists', {
       return result
     },
     getPlaylistCover: () => (playlist: iPlaylist) => {
+      if (playlist.label === FAV_LABEL) return playlist.img
+
       const labelCover = cacheImageService.getFromCache(playlist.label)
       let albumCover = null
-      if (playlist.files?.length > 0) {
+      if (playlist.files?.length || 0 > 0) {
         const firstfile = playlist.files[0] as iFile
         albumCover = cacheImageService.getFromCache(firstfile.album)
       }
       const cover = labelCover || albumCover
+      console.log('cover', cover)
       const img = cover || ImgCover
+      console.log('img', img)
       return img
     }
   },
@@ -109,6 +115,17 @@ export const usePlaylistsStore = defineStore('playlists', {
         console.error('ERROR playlist service init : ', error)
       }
 
+      const hasFavPlaylist = this.playlists?.findIndex((playlist: iPlaylist) => playlist.label === FAV_LABEL)
+      if (hasFavPlaylist === -1) {
+        const favPlaylist: iPlaylist = {
+          label: FAV_LABEL,
+          order: -1,
+          uuid: uuid(),
+          img: ImgFavCover
+        }
+        this.create(favPlaylist)
+      }
+
       if (this.needCacheUpdate) {
         await this.refreshCache()
       }
@@ -122,6 +139,7 @@ export const usePlaylistsStore = defineStore('playlists', {
               p.files.map(async f => {
                 if (f.album && !cacheImageService.getFromCache(f.album)) {
                   const img = await getCoverBase64(f.path)
+                  console.log('addToCache', f.album, img)
                   if (img) {
                     cacheImageService.addToCache(f.album, img)
                   }
@@ -224,6 +242,33 @@ export const usePlaylistsStore = defineStore('playlists', {
       }
 
       return file
+    },
+    addFileToFav(file: iFile) {
+      const favPlaylistIndex = this.playlists?.findIndex((playlist: iPlaylist) => playlist.label === FAV_LABEL)
+
+      if (favPlaylistIndex > -1) {
+        if (!this.playlists[favPlaylistIndex || 0].files) {
+          this.playlists[favPlaylistIndex || 0].files = [] as iFile[]
+        }
+        this.playlists[favPlaylistIndex || 0].files?.push(file)
+      }
+    },
+    removeFilefromFav(file: iFile) {
+      const favPlaylistIndex = this.playlists?.findIndex((playlist: iPlaylist) => playlist.label === FAV_LABEL)
+
+      if (favPlaylistIndex > -1) {
+        const playlist: iPlaylist = this.playlists[favPlaylistIndex || 0] as iPlaylist
+        const files: iFile[] = playlist.files || [] as iFile[]
+
+        if (files.length === 0) return
+
+        const fileIndex = files.findIndex((f: iFile) => f.uuid === file.uuid)
+
+        if (fileIndex > -1) {
+          files.splice(fileIndex, 1)
+          playlist.files = files
+        }
+      }
     },
     async addFilesToPlaylist(files: iFile[]) {
       this.refreshCovers = false

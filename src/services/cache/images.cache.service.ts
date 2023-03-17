@@ -5,14 +5,14 @@ const IMAGE_CACHE_LAST_UPDATE = 'image-cache-last-update'
 export class CacheImageService {
 
   addToCache(key: string, value: string) {
-    if (!localStorage.getItem(key)) {
-      localStorage.setItem(key, value)
+    if (!localStorage.getItem(key.toLowerCase())) {
+      localStorage.setItem(key.toLowerCase(), value)
       this.setLastUpdate()
     }
   }
 
   getFromCache(key: string): string | null {
-    return localStorage.getItem(key)
+    return localStorage.getItem(key.toLowerCase())
   }
 
   getLastUpdate() {

@@ -30,7 +30,7 @@
         {{ playlist.label }}
       </div>
       <div class="bb-tree__actions">
-        <template v-if="selectedNode?.uuid === playlist.uuid">
+        <template v-if="selectedNode?.uuid === playlist.uuid && playlist.label !== 'Titres likés'">
           <BBContextMenu :items="menuItems" />
         </template>
       </div>
@@ -147,14 +147,13 @@ const onCoverLoadError = (event) => {
 }
 
 const onDragStart = (playlist: iPlaylist) => {
-  if (playlistOrderTimer.value) clearTimeout(playlistOrderTimer.value)
-  playlistOrderTimer.value = setTimeout(() => {
-    draggingElement.value = playlist
-  }, 50)
+  if (playlist.label === 'Titres likés') return
+  draggingElement.value = playlist
 }
 
 const onDrop = (playlist: iPlaylist, index: number) => {
-  if (!draggingElement.value) return
+  if (playlist.label === 'Titres likés') return
+  if (!playlist) return
   updatePlaylistOrder(draggingElement.value, index)
 }
 
@@ -162,15 +161,17 @@ const updatePlaylistOrder = async (movedPlaylist: iPlaylist, newIndex: number) =
   if (!movedPlaylist || !filteredPlaylists.value) return
 
   const replacedPlaylist = filteredPlaylists.value.find((playlist: iPlaylist) => playlist.order === newIndex)
-  const asc = movedPlaylist.order < replacedPlaylist?.order
+  const asc = movedPlaylist?.order < replacedPlaylist?.order
   const newPlaylists: iPlaylist[] = playlistsStore.playlists.map((playlist:iPlaylist, index: number) => {
     const order = playlist.order || index
 
     if (playlist.uuid === movedPlaylist.uuid) {
       return {...movedPlaylist, order: replacedPlaylist?.order }
-    } else if (asc && order > movedPlaylist.order && order <= replacedPlaylist.order) {
+    } else if (asc && order >= movedPlaylist.order && order < replacedPlaylist.order) {
+      console.log('asc')
       return {...playlist, order: order > 0 ? order - 1 : order }
-    } else if (!asc && order < movedPlaylist.order && order >= replacedPlaylist.order) {
+    } else if (!asc && order <= movedPlaylist.order && order > replacedPlaylist.order) {
+      console.log('desc')
       return {...playlist, order: order > 0 ? order + 1 : order }
     } else {
       return {...playlist}

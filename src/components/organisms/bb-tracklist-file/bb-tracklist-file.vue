@@ -101,6 +101,7 @@ const trackTime = computed(() => {
 })
 
 const onCoverLoadError = (event) => {
+  console.error('bb-tracklist-file cover error', event)
   if (event.target) {
     const target = event.target as HTMLElement
     target.src = ImgCover
