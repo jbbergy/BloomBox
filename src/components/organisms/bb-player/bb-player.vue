@@ -20,7 +20,7 @@
           v-if="fileImage"
           :src="fileImage"
           alt="Cover"
-          @error="onCoverError"
+          @error="onCoverError($event)"
         />
       </div>
       <div class="bb-player__track-infos">
@@ -152,14 +152,12 @@ const isFav = computed(() => {
   }
   return false
 })
-const onCoverError = () => {
+const onCoverError = (event) => {
+  console.error('bb-player cover error', event)
   isCoverOnError.value = true
 }
 
 const toggleFav = () => {
-  console.log('toggleFav')
-  console.log('isFav', isFav.value)
-  console.log('playingFile', playQueueStore.playingFile)
   if(isFav.value && playQueueStore.playingFile) {
     playlistsStore.removeFilefromFav(playQueueStore.playingFile)
     isFav.value = false

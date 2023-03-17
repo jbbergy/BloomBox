@@ -100,7 +100,6 @@ const playlistsStore = usePlaylistsStore()
 const playQueueStore = usePlayQueueStore()
 const playlistsService = new PlaylistsService()
 
-const playlistOrderTimer = ref<NodeJS.Timeout>()
 const firstPlaylistsLoad = ref(true)
 const draggingElement = ref<iPlaylist>()
 const newPlaylistCover = ref()
@@ -140,6 +139,7 @@ const filteredPlaylists = computed(() => {
 const currentPlaylistId = computed(() => playlistsStore.currentPlaylist?.uuid)
 
 const onCoverLoadError = (event) => {
+  console.error('bb-tree cover error', event)
   if (event.target) {
     const target = event.target as HTMLElement
     target.src = ImgCover
@@ -168,10 +168,8 @@ const updatePlaylistOrder = async (movedPlaylist: iPlaylist, newIndex: number) =
     if (playlist.uuid === movedPlaylist.uuid) {
       return {...movedPlaylist, order: replacedPlaylist?.order }
     } else if (asc && order >= movedPlaylist.order && order < replacedPlaylist.order) {
-      console.log('asc')
       return {...playlist, order: order > 0 ? order - 1 : order }
     } else if (!asc && order <= movedPlaylist.order && order > replacedPlaylist.order) {
-      console.log('desc')
       return {...playlist, order: order > 0 ? order + 1 : order }
     } else {
       return {...playlist}

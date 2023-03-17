@@ -1,6 +1,9 @@
 <template>
   <div class="bb-tracklist-actions">
-    <BBButton @click="addTracks">
+    <BBButton
+      v-if="playlistsStore.selectedPlaylist?.label !== 'Titres likés'"
+      @click="addTracks"
+    >
       <inline-svg
         :src="IconPlus"
         aria-label="Créer une playlist"

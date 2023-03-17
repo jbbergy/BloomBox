@@ -35,7 +35,8 @@ const getCoverBase64 = async (filePath: string) => {
 
   if (pictureData?.data) {
     const image = Buffer.from(pictureData?.data).toString('base64')
-    return `data:${pictureData?.format}base64,${image}`
+    const imgBase64 = `data:${pictureData?.format};base64,${image}`
+    return imgBase64.replace(';;', ';')
   }
   return null
 }
@@ -88,9 +89,7 @@ export const usePlaylistsStore = defineStore('playlists', {
         albumCover = cacheImageService.getFromCache(firstfile.album)
       }
       const cover = labelCover || albumCover
-      console.log('cover', cover)
       const img = cover || ImgCover
-      console.log('img', img)
       return img
     }
   },
@@ -139,7 +138,6 @@ export const usePlaylistsStore = defineStore('playlists', {
               p.files.map(async f => {
                 if (f.album && !cacheImageService.getFromCache(f.album)) {
                   const img = await getCoverBase64(f.path)
-                  console.log('addToCache', f.album, img)
                   if (img) {
                     cacheImageService.addToCache(f.album, img)
                   }
