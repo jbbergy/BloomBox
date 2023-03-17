@@ -4,7 +4,7 @@
       class="bb-tree"
   >
     <div
-      v-for="(playlist, idx) in filteredPlaylists"
+      v-for="playlist in filteredPlaylists"
       :key="playlist.uuid"
       :id="playlist.uuid"
       :class="[
@@ -12,7 +12,8 @@
         currentPlaylistId === playlist.uuid && 'bb-tree__item--selected'
       ]"
       @dragstart="onDragStart(playlist)"
-      @dragover.prevent @drop="onDrop(playlist, idx)"
+      @dragover.prevent
+      @drop="onDrop(playlist)"
       :draggable="true"
       @click="onSelectNode(playlist)"
       @dblclick="onSelectNode(playlist, true)"
@@ -151,31 +152,30 @@ const onDragStart = (playlist: iPlaylist) => {
   draggingElement.value = playlist
 }
 
-const onDrop = (playlist: iPlaylist, index: number) => {
+const onDrop = (playlist: iPlaylist) => {
   if (playlist.label === 'Titres likés') return
   if (!playlist) return
-  updatePlaylistOrder(draggingElement.value, index)
+  updatePlaylistOrder(draggingElement.value, playlist)
 }
 
-const updatePlaylistOrder = async (movedPlaylist: iPlaylist, newIndex: number) => {
+const updatePlaylistOrder = async (movedPlaylist: iPlaylist, replacedPlaylist: iPlaylist) => {
   if (!movedPlaylist || !filteredPlaylists.value) return
 
-  const replacedPlaylist = filteredPlaylists.value.find((playlist: iPlaylist) => playlist.order === newIndex)
   const asc = movedPlaylist?.order < replacedPlaylist?.order
-  const newPlaylists: iPlaylist[] = playlistsStore.playlists.map((playlist:iPlaylist, index: number) => {
-    const order = playlist.order || index
+  const newPlaylists: iPlaylist[] = await Promise.all(playlistsStore.playlists.map((playlist:iPlaylist) => {
+      const order = playlist.order
 
-    if (playlist.uuid === movedPlaylist.uuid) {
-      return {...movedPlaylist, order: replacedPlaylist?.order }
-    } else if (asc && order >= movedPlaylist.order && order < replacedPlaylist.order) {
-      return {...playlist, order: order > 0 ? order - 1 : order }
-    } else if (!asc && order <= movedPlaylist.order && order > replacedPlaylist.order) {
-      return {...playlist, order: order > 0 ? order + 1 : order }
-    } else {
-      return {...playlist}
-    }
-  })
-
+      if (playlist.uuid === movedPlaylist.uuid) {
+        return {...movedPlaylist, order: replacedPlaylist?.order }
+      } else if (asc && order > movedPlaylist.order && order <= replacedPlaylist.order) {
+        return {...playlist, order: order > 0 ? order - 1 : order }
+      } else if (!asc && order < movedPlaylist.order && order >= replacedPlaylist.order) {
+        return {...playlist, order: order > 0 ? order + 1 : order }
+      } else {
+        return {...playlist}
+      }
+    })
+  )
   playlistsStore.playlists = newPlaylists
 }
 

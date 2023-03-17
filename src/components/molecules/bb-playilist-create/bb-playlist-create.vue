@@ -65,10 +65,11 @@ function hideCreateModal() {
 function createPlaylist() {
   if (!playlistName.value) return
 
+  const maxOrder = playlistsStore.playlists.reduce((prev, current) => (prev.order > current.order) ? prev : current)
   const newPlaylist: iPlaylist = {
     label: playlistName.value,
     uuid: uuid(),
-    order: (playlistsStore.playlists?.length || -1 ) + 1
+    order: (maxOrder.order || -1 ) + 1
   }
 
   playlistsStore.create(newPlaylist)
