@@ -12,8 +12,12 @@ export class AudioService {
     this._instance = null
   }
 
-  getVolume(): number {
-    return this._instance?.getVolume() || 0
+  getRMSLevel(): number | string {
+    return this._instance?.getRMSLevel() || 0
+  }
+
+  getPeakLevel(): number {
+    return this._instance?.getPeakLevel() || 0
   }
 
   getInstance() {

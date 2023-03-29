@@ -10,16 +10,14 @@ export class AudioPlayer {
   private isPaused: boolean
   private startTime: number
   private events: Partial<AudioPlayerEvents> = {}
-  private isEndEmitted: boolean
   private volume: number
   private audioUrl: string
-  private analyserNode: AnalyserNode;
+  private analyserNode: AnalyserNode
 
   constructor(
     audioUrl: string,
     volume = 1
   ) {
-    this.isEndEmitted = false
     this.startTime = 0
     this.isPlaying = false
     this.isPaused = false
@@ -27,13 +25,39 @@ export class AudioPlayer {
     this.audioUrl = audioUrl
   }
 
-  getVolume(): number {
+  getRMSLevel(): number | string {
+    if (!this.isPlaying && !this.sourceNode && !this.analyserNode) return 0
+    const bufferLength = this.analyserNode.fftSize
+    const buffer = new Float32Array(bufferLength)
+
+    this.analyserNode.getFloatTimeDomainData(buffer)
+
+    let sum = 0
+    for (let i = 0; i < bufferLength; i++) {
+      const val = buffer[i]
+      sum += val * val
+    }
+
+    const rms = Math.sqrt(sum / bufferLength)
+    const rmsdB = 20 * Math.log10(rms)
+    return rmsdB
+  }
+
+  getPeakLevel(): number {
     if (!this.isPlaying && !this.sourceNode && !this.analyserNode) return 0
     const dataArray = new Uint8Array(this.analyserNode.frequencyBinCount)
-    this.analyserNode.getByteFrequencyData(dataArray)
-    const total = dataArray.reduce((acc, val) => acc + val, 0)
-    const average = total / dataArray.length
-    return average
+    this.analyserNode.getByteTimeDomainData(dataArray)
+    let peak = -Infinity
+
+    for (let i = 0; i < dataArray.length; i++) {
+      const value = dataArray[i] / 128 - 1
+      if (value > peak) {
+        peak = value
+      }
+    }
+
+    const dBFS = 20 * Math.log10(Math.abs(peak))
+    return dBFS
   }
 
   on(event: string, callback: unknown) {
@@ -55,10 +79,10 @@ export class AudioPlayer {
     this.gainNode.gain.value = this.volume
 
     this.analyserNode = this.audioCtx.createAnalyser()
-    this.analyserNode.fftSize = 1024
-    this.analyserNode.maxDecibels = -10
-    this.analyserNode.minDecibels = -100
-    this.analyserNode.smoothingTimeConstant = 0.7
+    this.analyserNode.fftSize = 2048
+    this.analyserNode.maxDecibels = 0
+    this.analyserNode.minDecibels = -70
+    this.analyserNode.smoothingTimeConstant = 0.1
 
     this.sourceNode.connect(this.analyserNode)
     this.analyserNode.connect(this.gainNode)
@@ -77,14 +101,12 @@ export class AudioPlayer {
 
   initEvent() {
     this.sourceNode.addEventListener('ended', () => {
-      this.isEndEmitted = true
       this.checkTime()
     })
   }
 
   play(): void {
     if (this.buffer) {
-      this.isEndEmitted = false
       this.sourceNode.start(0, 0)
       this.isPlaying = true
       this.isPaused = false

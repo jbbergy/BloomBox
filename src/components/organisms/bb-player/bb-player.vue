@@ -3,6 +3,7 @@
     <div class="bb-player__left">
       <div class="bb-player__vu-meter">
         <div class="bb-player__vu-meter-value" />
+        <div class="bb-player__vu-meter-value bb-player__vu-meter-value--rms" />
       </div>
       <div class="bb-player__cover">
         <BBTransportButton
@@ -138,7 +139,8 @@ onMounted(() => {
   })
 })
 
-const getRMSLevel = computed(() => `${playerStore.currentVolume}%`);
+const getPeakLevel = computed(() => `${playerStore.currentPeakLevel}%`);
+const getRMSLevel = computed(() => `${playerStore.currentRMSLevel}%`);
 const isPaused = computed(() => playerStore.currentInstance?.getIsPaused());
 const isPlaying = computed(() => playerStore.currentInstance?.getIsPlaying());
 const favIcon = computed(() => isFav.value ? IconHeartFilled : IconHeart )
@@ -340,11 +342,17 @@ watch(
 
     &-value {
       position: absolute;
-      height: v-bind(getRMSLevel);
+      height: v-bind(getPeakLevel);
       bottom: 0;
       left: 0;
       right: 0;
       background-color: $bb-bg-color-4;
+      transition: height 0.04s linear;
+
+      &--rms {
+        height: v-bind(getRMSLevel);
+        background-color: $bb-color-lynch;
+      }
     }
   }
 }
