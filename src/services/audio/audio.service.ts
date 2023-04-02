@@ -1,4 +1,4 @@
-import { AudioPlayer } from '../../api/audio/audio.api'
+import { AudioPlayer } from '../../api/audio/audio.api.streaming'
 
 export class AudioService {
   private _instance: AudioPlayer | null
@@ -47,7 +47,11 @@ export class AudioService {
 
   async play() {
     if (this._instance) {
-      await this._instance.loadAudio()
+      try {
+        await this._instance.load()
+      } catch (error) {
+        console.error(error)
+      }
       this._instance.play()
     }
   }
@@ -58,14 +62,14 @@ export class AudioService {
   }
 
 
-  stop() {
+  async stop() {
     if (!this._instance) return
     if (this.getIsPlaying() || this.getIsPaused() === true) {
-      this._instance.stop()
+      await this._instance.stop()
     }
   }
 
-  seek(seekTo) {
+  seek(seekTo: number) {
     if (this._instance) {
       this._instance?.setCurrentTime(seekTo)
     }

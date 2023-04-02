@@ -12,7 +12,11 @@ export class CacheImageService {
   }
 
   getFromCache(key: string): string | null {
-    return localStorage.getItem(key.toLowerCase())
+    let cover = null
+    if (key) {
+      cover = localStorage.getItem(key.toLowerCase())
+    }
+    return cover
   }
 
   getLastUpdate() {
