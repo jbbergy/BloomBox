@@ -47,12 +47,7 @@ export class AudioService {
 
   async play() {
     if (this._instance) {
-      try {
-        await this._instance.load()
-      } catch (error) {
-        console.error(error)
-      }
-      this._instance.play()
+      await this._instance.play()
     }
   }
 

@@ -33,11 +33,10 @@ export const usePlayerStore = defineStore('player', {
     async play(filePath: string, callback: CallableFunction) {
       if (this.currentInstance) {
         await this.currentInstance.stop()
-        this.currentInstance.destroy()
       }
       this.currentInstance = new AudioService(filePath, this.defaultVolume)
       await this.currentInstance.play()
-      await this.currentInstance.seek(0)
+      // await this.currentInstance.seek(0)
       requestAnimationFrame(this.updateRmsLevel)
       requestAnimationFrame(this.updatePeakLevel)
       if (callback) {
