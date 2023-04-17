@@ -1,10 +1,10 @@
 <template>
   <div
-      v-if="hasPlayists"
-      class="bb-tree"
+    v-if="hasPlayists"
+    class="bb-tree"
   >
     <div
-      v-for="playlist in filteredPlaylists"
+      v-for="playlist in sortedPlaylists"
       :key="playlist.uuid"
       :id="playlist.uuid"
       :class="[
@@ -37,9 +37,9 @@
       </div>
     </div>
   </div>
-    
+
   <teleport to="body">
-    <BBModal 
+    <BBModal
       v-if="isEditPlaylistModalOpen"
       @keyup.escape="isEditPlaylistModalOpen = false"
     >
@@ -81,7 +81,7 @@
   </teleport>
 </template>
 <script lang="ts" setup>
-import { computed, onBeforeMount,onMounted, watch, ref } from 'vue'
+import { computed, onBeforeMount, onMounted, watch, ref } from 'vue'
 import BBContextMenu from '../../atoms/bb-context-menu/bb-context-menu.vue'
 import BBInput from '../../atoms/bb-input/bb-input.vue'
 import BBButton from '../../atoms/bb-button/bb-button.vue'
@@ -127,14 +127,14 @@ const modalCoverPreview = computed(() => {
 })
 
 const hasPlayists = computed(() => {
-  if (filteredPlaylists.value) {
-    return filteredPlaylists.value?.length > 0
+  if (sortedPlaylists.value) {
+    return sortedPlaylists.value?.length > 0
   }
   return null
 })
 
-const filteredPlaylists = computed(() => {
-  return playlistsStore.filteredPlaylists
+const sortedPlaylists = computed(() => {
+  return playlistsStore.sortedPlaylists
 })
 
 const currentPlaylistId = computed(() => playlistsStore.currentPlaylist?.uuid)
@@ -159,27 +159,27 @@ const onDrop = (playlist: iPlaylist) => {
 }
 
 const updatePlaylistOrder = async (movedPlaylist: iPlaylist, replacedPlaylist: iPlaylist) => {
-  if (!movedPlaylist || !filteredPlaylists.value) return
+  if (!movedPlaylist || !sortedPlaylists.value) return
 
   const asc = movedPlaylist?.order < replacedPlaylist?.order
-  const newPlaylists: iPlaylist[] = await Promise.all(playlistsStore.playlists.map((playlist:iPlaylist) => {
-      const order = playlist.order
+  const newPlaylists: iPlaylist[] = await Promise.all(playlistsStore.playlists.map((playlist: iPlaylist) => {
+    const order = playlist.order
 
-      if (playlist.uuid === movedPlaylist.uuid) {
-        return {...movedPlaylist, order: replacedPlaylist?.order }
-      } else if (asc && order > movedPlaylist.order && order <= replacedPlaylist.order) {
-        return {...playlist, order: order > 0 ? order - 1 : order }
-      } else if (!asc && order < movedPlaylist.order && order >= replacedPlaylist.order) {
-        return {...playlist, order: order > 0 ? order + 1 : order }
-      } else {
-        return {...playlist}
-      }
-    })
+    if (playlist.uuid === movedPlaylist.uuid) {
+      return { ...movedPlaylist, order: replacedPlaylist?.order }
+    } else if (asc && order > movedPlaylist.order && order <= replacedPlaylist.order) {
+      return { ...playlist, order: order > 0 ? order - 1 : order }
+    } else if (!asc && order < movedPlaylist.order && order >= replacedPlaylist.order) {
+      return { ...playlist, order: order > 0 ? order + 1 : order }
+    } else {
+      return { ...playlist }
+    }
+  })
   )
   playlistsStore.playlists = newPlaylists
 }
 
-const updatePlaylist = async () => { 
+const updatePlaylist = async () => {
   if (!playlistsStore.selectedPlaylist?.uuid) return
   if (newPlaylistName.value) {
     let foundItem: iPlaylist | null = null
@@ -265,13 +265,13 @@ watch(selectedNode, (node: iPlaylist) => {
   router.push({ name: 'tracklist' })
 })
 
-watch(filteredPlaylists, (playlists: iPlaylist[]) => {
+watch(sortedPlaylists, (playlists: iPlaylist[]) => {
   if (playlists && !firstPlaylistsLoad.value) {
     playlists.forEach(async (playlist) => {
       try {
         await playlistsService.update(playlist.key, playlist)
         console.info('playlist updated successfuly', playlist.key, playlist.label)
-        } catch(error) {
+      } catch (error) {
         console.error('Error updating playlist', playlist.key, playlist.label)
       }
     })
@@ -302,8 +302,8 @@ onMounted(async () => {
 .bb-tree {
   padding-top: $bb-spacing-small;
 
-  &__modal{
-    
+  &__modal {
+
     &-title {
       color: $bb-text-color-3;
     }
@@ -336,6 +336,7 @@ onMounted(async () => {
 
   &__img {
     height: 3rem;
+
     img {
       height: 100%;
       border-radius: $bb-border-radius-regular;

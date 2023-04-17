@@ -21,4 +21,5 @@ export interface iFile {
   artist?: string
   genre?: string
   name?: string
+  playlistId?: string
 }

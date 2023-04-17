@@ -44,7 +44,7 @@ const getCoverBase64 = async (filePath: string) => {
 export const usePlaylistsStore = defineStore('playlists', {
   state: () => ({
     playlists: [] as iPlaylist[] | null,
-    filter: null,
+    filter: null as string | null,
     impageCache: {},
     selectedPlaylist: null as iPlaylist | null,
     currentPlaylist: null as iPlaylist | null,
@@ -53,7 +53,35 @@ export const usePlaylistsStore = defineStore('playlists', {
     sortOrder: 'ORDER' as string,
   }),
   getters: {
-    filteredPlaylists: (state) => {
+    searchFilesInPlaylist: (state) => {
+      if (!state.filter) return null
+      const files: iFile[] = []
+      const playlists = state.playlists?.filter((playlist: iPlaylist) => {
+        let hasFiles = false
+        if (playlist.files && (playlist.files?.length || 0) > 0) {
+          const filesToExam = playlist.files as iFile[]
+          filesToExam.forEach((file: iFile) => {
+            if (
+              state.filter && (
+                file.label?.toLowerCase()?.trim().startsWith(state.filter.toLowerCase())
+                || file.artist?.toLowerCase()?.trim().startsWith(state.filter.toLowerCase())
+                || file.album?.toLowerCase()?.trim().startsWith(state.filter.toLowerCase())
+              )
+            ) {
+              hasFiles = true
+              file.playlistId = playlist.uuid
+              files.push(file)
+            }
+          })
+        }
+        return hasFiles
+      })
+      return {
+        playlists,
+        files
+      }
+    },
+    sortedPlaylists: (state) => {
       if (!state.playlists) return []
       let result: iPlaylist[] = [...state.playlists]
 
@@ -63,10 +91,6 @@ export const usePlaylistsStore = defineStore('playlists', {
         }
         return playlist
       })
-
-      if (state.filter) {
-        result = result?.filter(p => p.label.toLowerCase().indexOf(state.filter.toLowerCase()) > -1)
-      }
 
       if (state.sortOrder && result) {
         if (state.sortOrder === 'ASC') {

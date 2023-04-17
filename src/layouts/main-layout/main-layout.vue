@@ -1,8 +1,13 @@
 <template>
-
-  <div v-if="showDebug" class="data-debug">
+  <div
+    v-if="showDebug"
+    class="data-debug"
+  >
     <button @click="showDebug = false">Close</button>
-    <div v-for="(playlist, index) in playlistsStore.filteredPlaylists" :key="playlist.order">
+    <div
+      v-for="(playlist, index) in playlistsStore.sortedPlaylists"
+      :key="playlist.order"
+    >
       {{ index }} - {{ playlist.order }} - {{ playlist.label }}
     </div>
   </div>
@@ -16,7 +21,11 @@
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" side="left" class="custom-scrollbar">
+    <q-drawer
+      v-model="leftDrawerOpen"
+      side="left"
+      class="custom-scrollbar"
+    >
       <BBSidebar />
     </q-drawer>
 
@@ -65,8 +74,8 @@ watch(leftDrawerOpen, () => {
   z-index: 2100;
   overflow: auto;
   height: 645px;
+
   button {
     pointer-events: all;
   }
-}
-</style>
+}</style>

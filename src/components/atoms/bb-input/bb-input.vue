@@ -4,6 +4,7 @@
       :id="inputId"
       :value="modelValue"
       @input="$emit('update:modelValue', $event.target.value)"
+      @focus="$emit('focus')"
       @keyup.enter="onPressEnter"
       type="text"
       class="bb-input__element"
@@ -58,7 +59,7 @@ const onPressEnter = () => {
     height: $bb-height-regular;
     background-color: $bb-bg-color-1;
     padding: 0 $bb-spacing-xsmall;
-    border:0;
+    border: 0;
     border-radius: $bb-border-radius-regular;
     color: $bb-text-color-1;
     font-size: $bb-font-size-regular;
@@ -70,7 +71,7 @@ const onPressEnter = () => {
     }
 
     &:focus {
-      background-color:$bb-bg-color-2;
+      background-color: $bb-bg-color-2;
       color: $bb-text-color-2;
       border: 1px solid $bb-element-outline-accent;
     }

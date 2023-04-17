@@ -14,7 +14,10 @@
     tabindex="0"
   >
     <div class="bb-tracklist-file__playing">
-      <inline-svg :src="IconPlay" aria-label="Lire ce titre" />
+      <inline-svg
+        :src="IconPlay"
+        aria-label="Lire ce titre"
+      />
     </div>
     <div class="bb-tracklist-file__cover">
       <img
@@ -55,6 +58,8 @@ const cacheImageService = new CacheImageService()
 const playQueueStore = usePlayQueueStore()
 const playlistsStore = usePlaylistsStore()
 const trackPicture = ref<string | null>(PicturePlaceholder)
+
+const emits = defineEmits(['dblclick'])
 
 onBeforeMount(() => {
   trackPicture.value = PicturePlaceholder
@@ -136,6 +141,7 @@ const onDelete = async () => {
 }
 
 const onPlayFile = () => {
+  emits('dblclick')
   if (!playQueueStore.selectedFile) return
   playQueueStore.playingFile = playQueueStore.selectedFile
   playQueueStore.addToQueue(playlistsStore.selectedPlaylist?.files)
