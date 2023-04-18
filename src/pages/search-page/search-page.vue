@@ -61,7 +61,6 @@ import ImgCover from '../../assets/img/cover.jpg'
 const playlistsStore = usePlaylistsStore()
 const playQueueStore = usePlayQueueStore()
 
-
 const onCoverLoadError = (event) => {
   if (event.target) {
     const target = event.target as HTMLElement
