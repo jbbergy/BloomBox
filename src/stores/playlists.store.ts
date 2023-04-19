@@ -44,6 +44,7 @@ const getCoverBase64 = async (filePath: string) => {
 export const usePlaylistsStore = defineStore('playlists', {
   state: () => ({
     playlists: [] as iPlaylist[] | null,
+    lastPlaylists: [] as iPlaylist[] | null,
     filter: null as string | null,
     impageCache: {},
     selectedPlaylist: null as iPlaylist | null,
@@ -108,7 +109,7 @@ export const usePlaylistsStore = defineStore('playlists', {
 
       const labelCover = cacheImageService.getFromCache(playlist.label)
       let albumCover = null
-      if (playlist.files?.length || 0 > 0) {
+      if (!labelCover && playlist.files?.length || 0 > 0) {
         const firstfile = playlist.files[0] as iFile
         albumCover = cacheImageService.getFromCache(firstfile.album)
       }
@@ -118,6 +119,23 @@ export const usePlaylistsStore = defineStore('playlists', {
     }
   },
   actions: {
+    addLastPlaylist(playlist: iPlaylist) {
+      if (
+        !this.lastPlaylists
+        || this.lastPlaylists.findIndex(p => p.uuid === playlist.uuid) > -1
+      ) {
+        return
+      }
+
+      this.lastPlaylists?.reverse()
+      if ((this.lastPlaylists?.length || 0) > 4) {
+        this.lastPlaylists?.shift()
+      }
+      const newFiles: iFile[] = [playlist.files[0]]
+      this.lastPlaylists?.push({ ...playlist, files: newFiles })
+      this.lastPlaylists?.reverse()
+      localStorage.setItem('lastPlaylists', JSON.stringify(this.lastPlaylists))
+    },
     async init() {
 
       this.needCacheUpdate = false
@@ -153,6 +171,10 @@ export const usePlaylistsStore = defineStore('playlists', {
         await this.refreshCache()
       }
 
+      const lastPlaylistsFromStorage = localStorage.getItem('lastPlaylists')
+      if (lastPlaylistsFromStorage) {
+        this.lastPlaylists = JSON.parse(lastPlaylistsFromStorage)
+      }
     },
     async refreshCache() {
       if (this.playlists && this.playlists?.length > 0) {

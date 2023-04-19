@@ -1,63 +1,95 @@
 <template>
   <q-page class="home-page">
-    <img
-      class="home-page__illustration--bg"
-      :src="cover"
-    />
-    <div class="home-page__wrapper">
-      <img
-        class="home-page__illustration"
-        :src="cover"
-      />
+    <h2 class="home-page__section-title">
+      Playlists récentes
+    </h2>
+    <div
+      class="home-page__last-playlists"
+      v-if="(playlistsStore.lastPlaylists?.length || 0) > 0"
+    >
+      <BBCard
+        v-for="playlist in playlistsStore.lastPlaylists"
+        :key="playlist.uuid"
+        @click="goToPlaylist(playlist)"
+      >
+        <div class="home-page__playlist-img">
+          <img
+            :src="playlistsStore.getPlaylistCover(playlist)"
+            @error="onCoverLoadError($event)"
+          />
+        </div>
+        <div class="home-page__playlist-title">
+          {{ playlist.label }}
+        </div>
+      </BBCard>
+    </div>
+    <div
+      v-else
+      class="home-page__no-playlists"
+    >
+      Commencez a écouter de la musique ;)
     </div>
   </q-page>
 </template>
 
-<script lang="ts" setup>
-import Cover1 from '../../assets/img/cover-1.png'
-import Cover2 from '../../assets/img/cover-2.png'
-import Cover3 from '../../assets/img/cover-3.png'
-import { computed } from 'vue'
-import { getRandomValue } from '../../utils/random.ts'
+<script setup lang="ts">
+import ImgCover from '../../assets/img/cover.jpg'
+import { usePlaylistsStore } from '../../stores/playlists.store'
+import BBCard from '../../components/atoms/bb-card/bb-card.vue'
+import { iPlaylist } from '../../services/interfaces/playlist.interface';
 
-const cover = computed(() => {
-  const covers = [
-    Cover1,
-    Cover2,
-    Cover3
-  ]
+const playlistsStore = usePlaylistsStore()
 
-  const pos = getRandomValue(0, covers.length - 1)
+const onCoverLoadError = (event) => {
+  if (event.target) {
+    const target = event.target as HTMLElement
+    target.src = ImgCover
+  }
+}
 
-  return covers[pos]
-})
+const goToPlaylist = (playlistToGo: iPlaylist) => {
+
+  if (!playlistToGo) return
+  const playlist = document.getElementById(playlistToGo.uuid)
+  if (!playlist) return
+  playlist.click()
+  playlist.focus()
+}
 </script>
 
 <style lang="scss">
 .home-page {
-  position: relative;
-  overflow: hidden;
 
-  &__illustration {
-
-    &--bg {
-      position: absolute;
-      width: 150%;
-      top: -50%;
-      left: -25%;
-    }
-  }
-
-  &__wrapper {
+  &__no-playlists {
     display: flex;
     justify-content: center;
     align-items: center;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    backdrop-filter: blur(10px);
+    height: 8rem;
+    padding: $bb-spacing-small;
+    margin: $bb-spacing-small;
+    border-radius: $bb-border-radius-regular;
+  }
+
+  &__section {
+
+    &-title {
+      padding-left: $bb-spacing-small;
+      font-size: $bb-font-size-large;
+    }
+  }
+
+  &__last-playlists {
+    display: flex;
+  }
+
+  &__playlist {
+    &-img {
+
+      img {
+        width: 100%;
+        border-radius: $bb-border-radius-regular;
+      }
+    }
   }
 }
 </style>
