@@ -26,10 +26,17 @@
       </div>
       <div class="bb-player__track-infos">
         <template v-if="playQueueStore.playingFile">
-          <div @click="scrollTotitle" class="bb-player__track-title" tabindex="0">
+          <div
+            @click="scrollTotitle"
+            class="bb-player__track-title"
+            tabindex="0"
+          >
             {{ playQueueStore.playingFile.label }}
           </div>
-          <div @click="scrollTotitle" class="bb-player__track-artist">
+          <div
+            @click="scrollTotitle"
+            class="bb-player__track-artist"
+          >
             {{ playQueueStore.playingFile.artist }}
           </div>
         </template>
@@ -37,13 +44,26 @@
     </div>
     <div class="bb-player__middle">
       <div class="bb-player__transport">
-        <BBTransportButton :is-active="isShuffle" @click="onShuffle" no-bg>
-          <inline-svg :src="IconShuffle" aria-label="Mode aléatoire" />
+        <BBTransportButton
+          :is-active="isShuffle"
+          @click="onShuffle"
+          no-bg
+        >
+          <inline-svg
+            :src="IconShuffle"
+            aria-label="Mode aléatoire"
+          />
         </BBTransportButton>
         <BBTransportButton @click="onPrevFile">
-          <inline-svg :src="IconPrev" aria-label="Fichier précédent" />
+          <inline-svg
+            :src="IconPrev"
+            aria-label="Fichier précédent"
+          />
         </BBTransportButton>
-        <BBTransportButton @click="onPlayFile" size="large">
+        <BBTransportButton
+          @click="onPlayFile"
+          size="large"
+        >
           <inline-svg
             v-show="isPaused || !isPlaying"
             :src="IconPlay"
@@ -56,10 +76,20 @@
           />
         </BBTransportButton>
         <BBTransportButton @click="onNextFile">
-          <inline-svg :src="IconNext" aria-label="Fichier suivant" />
+          <inline-svg
+            :src="IconNext"
+            aria-label="Fichier suivant"
+          />
         </BBTransportButton>
-        <BBTransportButton :is-active="isLoop" @click="onLoop" no-bg>
-          <inline-svg :src="IconLoop" aria-label="Lecture en boucle" />
+        <BBTransportButton
+          :is-active="isLoop"
+          @click="onLoop"
+          no-bg
+        >
+          <inline-svg
+            :src="IconLoop"
+            aria-label="Lecture en boucle"
+          />
         </BBTransportButton>
       </div>
       <div class="bb-player__seek">
@@ -143,8 +173,8 @@ const getPeakLevel = computed(() => `${playerStore.currentPeakLevel}%`);
 const getRMSLevel = computed(() => `${playerStore.currentRMSLevel}%`);
 const isPaused = computed(() => playerStore.currentInstance?.getIsPaused());
 const isPlaying = computed(() => playerStore.currentInstance?.getIsPlaying());
-const favIcon = computed(() => isFav.value ? IconHeartFilled : IconHeart )
-const hasFileToPlay = computed(() => playQueueStore.playingFile )
+const favIcon = computed(() => isFav.value ? IconHeartFilled : IconHeart)
+const hasFileToPlay = computed(() => playQueueStore.playingFile)
 const isFav = computed(() => {
   const playlistFav = playlistsStore.playlists?.find((playlist: iPlaylist) => playlist.label === 'Titres likés')
 
@@ -160,10 +190,10 @@ const onCoverError = (event) => {
 }
 
 const toggleFav = () => {
-  if(isFav.value && playQueueStore.playingFile) {
+  if (isFav.value && playQueueStore.playingFile) {
     playlistsStore.removeFilefromFav(playQueueStore.playingFile)
     isFav.value = false
-  } else if(!isFav.value && playQueueStore.playingFile) {
+  } else if (!isFav.value && playQueueStore.playingFile) {
     playlistsStore.addFileToFav(playQueueStore.playingFile)
     isFav.value = true
   }
@@ -245,13 +275,14 @@ const fileImage = computed(() => {
 watch(
   playingFile,
   async (value: iFile) => {
-    if (value) {
+    if (value && playlistsStore.selectedPlaylist) {
       isCoverOnError.value = false
-      playlistsStore.currentPlaylist = playlistsStore.selectedPlaylist;
+      playlistsStore.currentPlaylist = playlistsStore.selectedPlaylist
+      playlistsStore.addLastPlaylist(playlistsStore.selectedPlaylist)
       playerStore.play(value.path, () => {
-        onNextFile();
+        onNextFile()
       });
-      playQueueStore.getCurrentCover();
+      playQueueStore.getCurrentCover()
     }
   },
   {
@@ -355,5 +386,4 @@ watch(
       }
     }
   }
-}
-</style>
+}</style>

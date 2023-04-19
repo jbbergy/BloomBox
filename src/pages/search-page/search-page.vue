@@ -16,7 +16,7 @@
           :key="playlist.uuid"
           :id="playlist.uuid"
           class="search-page__playlist-item"
-          @dblclick="goToPlaylist(playlist)"
+          @click="goToPlaylist(playlist)"
           @keypress.space="goToPlaylist(playlist)"
           @keypress.enter="goToPlaylist(playlist)"
           tabindex="0"

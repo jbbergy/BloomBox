@@ -53,6 +53,7 @@ function createWindow() {
     },
   })
   Menu.setApplicationMenu(null)
+  mainWindow.setMinimumSize(1200, 768)
   mainWindow.autoHideMenuBar = true
   mainWindow.loadURL(process.env.APP_URL)
 

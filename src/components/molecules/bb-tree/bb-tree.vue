@@ -209,6 +209,7 @@ const updatePlaylist = async () => {
 }
 
 const onSelectNode = (playlist: iPlaylist, play = false) => {
+  selectedNode.value = undefined
   selectedNode.value = playlist
   if (play && playlist.files) {
     let idx = 0
@@ -259,10 +260,15 @@ const editPlaylistcover = () => {
 }
 
 watch(selectedNode, (node: iPlaylist) => {
+  console.log('🚀 ~ watch ~ selectedNode:', selectedNode)
+  console.log('🚀 ~ watch ~ router:', router.currentRoute.value.name)
+
   if (!node || !playlistsStore.playlists) return
   const playlist: iPlaylist | null = playlistsStore.playlists.find((p) => p.uuid === node.uuid) || null
   playlistsStore.selectedPlaylist = playlist
   router.push({ name: 'tracklist' })
+}, {
+  deep: true
 })
 
 watch(sortedPlaylists, (playlists: iPlaylist[]) => {
