@@ -4,12 +4,10 @@
     class="data-debug"
   >
     <button @click="showDebug = false">Close</button>
-    <div
-      v-for="(playlist, index) in playlistsStore.sortedPlaylists"
-      :key="playlist.order"
-    >
-      {{ index }} - {{ playlist.order }} - {{ playlist.label }}
-    </div>
+    <br>
+    isLoading {{ globalStore.isLoading }}<br>
+    loadingTarget {{ globalStore.loadingTarget }}<br>
+    loadingMessagea {{ globalStore.loadingMessage }}<br>
   </div>
   <q-layout view="hHh lpR lFf">
 
@@ -42,18 +40,39 @@
     </q-footer>
 
   </q-layout>
+  <teleport to="body">
+    <BBModal
+      v-if="globalStore.isLoading && globalStore.loadingTarget === 'global'"
+      class="global-loading-modal"
+    >
+      <template #title>
+        {{ globalStore.loadingMessage || 'Chargement...' }}
+      </template>
+      <template #default>
+        <div class="global-loading-modal__body">
+          <inline-svg
+            :src="SvgLoading"
+            aria-label="Chargment"
+          />
+        </div>
+      </template>
+    </BBModal>
+  </teleport>
 </template>
 
 <script lang="ts" setup>
-import { usePlaylistsStore } from '../../stores/playlists.store'
+import InlineSvg from 'vue-inline-svg'
+import SvgLoading from '../../assets/loading.svg'
+import { useGlobalStore } from '../../stores/global.store'
 import BBHeader from '../../components/organisms/bb-header/bb-header.vue'
 import BBSidebar from '../../components/organisms/bb-sidebar/bb-sidebar.vue'
 import BBPlayer from '../../components/organisms/bb-player/bb-player.vue'
+import BBModal from '../../components/atoms/bb-modal/bb-modal.vue'
 import { ref, watch } from 'vue'
 
 const showDebug = ref(false)
 
-const playlistsStore = usePlaylistsStore()
+const globalStore = useGlobalStore()
 const leftDrawerOpen = ref(true)
 
 watch(leftDrawerOpen, () => {
@@ -65,7 +84,7 @@ watch(leftDrawerOpen, () => {
 <style lang="scss">
 .data-debug {
   position: fixed;
-  top: 0.5rem;
+  top: 2.5rem;
   right: 0.5rem;
   background-color: rgba(0, 0, 0, 0.8);
   border-radius: 0.5rem;
@@ -73,9 +92,10 @@ watch(leftDrawerOpen, () => {
   width: 500px;
   z-index: 2100;
   overflow: auto;
-  height: 645px;
+  height: 450px;
 
   button {
     pointer-events: all;
   }
-}</style>
+}
+</style>

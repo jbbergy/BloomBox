@@ -1,20 +1,36 @@
 <template>
   <div class="bb-button">
-    <button :class="[
-    'bb-button__element',
-    noBg && 'bb-button__element--no-bg',
-    ]">
-      <slot />
+    <button
+      :class="[
+        'bb-button__element',
+        noBg && 'bb-button__element--no-bg',
+      ]"
+      :disabled="disabled"
+    >
+      <inline-svg
+        v-if="isLoading"
+        :src="SvgLoading"
+        aria-label="Chargment"
+      />
+      <slot v-else />
     </button>
   </div>
 </template>
 
 <script lang="ts" setup>
-defineProps({
-  noBg: {
-    type: Boolean,
-    default: false
-  }
+import InlineSvg from 'vue-inline-svg'
+import SvgLoading from '../../../assets/loading.svg'
+
+interface Props {
+  noBg?: boolean
+  disabled?: boolean
+  isLoading?: boolean
+}
+
+withDefaults(defineProps<Props>(), {
+  noBg: false,
+  disabled: false,
+  isLoading: false
 })
 </script>
 
@@ -37,6 +53,10 @@ defineProps({
     font-size: $bb-font-size-regular;
     font-weight: $bb-font-weight-bold;
     text-transform: uppercase;
+
+    &:disabled {
+      background-color: darken($bb-bg-color-1, 5%);
+    }
 
     &:hover {
       background-color: lighten($bb-bg-color-1, $bb-lighten-light);

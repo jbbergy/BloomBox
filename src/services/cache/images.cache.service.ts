@@ -13,7 +13,7 @@ export class CacheImageService {
 
   getFromCache(key: string): string | null {
     let cover = null
-    if (key) {
+    if (key && key !== 'inconnu') {
       cover = localStorage.getItem(key.toLowerCase())
     }
     return cover

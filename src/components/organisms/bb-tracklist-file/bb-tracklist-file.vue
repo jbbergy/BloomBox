@@ -114,7 +114,7 @@ const onCoverLoadError = (event) => {
 }
 
 const updatePicture = () => {
-  trackPicture.value = cacheImageService.getFromCache(props?.file?.album || '') || PicturePlaceholder
+  trackPicture.value = cacheImageService.getFromCache(props?.file?.album || 'inconnu') || PicturePlaceholder
 }
 
 const getFileDuration = (duration) => {

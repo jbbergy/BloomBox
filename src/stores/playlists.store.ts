@@ -10,10 +10,12 @@ import { readMetadata } from '../services/metadata/metadata.service'
 import { CacheImageService } from '../services/cache/images.cache.service'
 import ImgCover from '../assets/img/cover.jpg'
 import ImgFavCover from '../assets/img/fav-cover.png'
+import { useGlobalStore } from './global.store'
 
 const FAV_LABEL = 'Titres likés'
 let playlistService: PlaylistsService | null = null
 const cacheImageService = new CacheImageService()
+const globalStore = useGlobalStore()
 
 const isOlderThanHours = (date: dayjs.Dayjs, hours = 24) => {
   const currentDate = dayjs()
@@ -177,8 +179,11 @@ export const usePlaylistsStore = defineStore('playlists', {
       }
     },
     async refreshCache() {
+      globalStore.isLoading = true
+      globalStore.loadingMessage = "Chargement...mise à jour du cache"
+      globalStore.loadingTarget = 'global'
       if (this.playlists && this.playlists?.length > 0) {
-        await Promise.all(this.playlists.map(async p => {
+        await Promise.all(this.playlists.map(async (p: iPlaylist) => {
           if ((p.files?.length || -1) > 0 && Array.isArray(p.files)) {
             await Promise.all(
               p.files.map(async f => {
@@ -195,6 +200,9 @@ export const usePlaylistsStore = defineStore('playlists', {
           }
         }))
       }
+      globalStore.isLoading = false
+      globalStore.loadingTarget = null
+      globalStore.loadingMessage = null
     },
     async create(playlist: iPlaylist) {
       if (!playlistService) {
@@ -276,13 +284,13 @@ export const usePlaylistsStore = defineStore('playlists', {
 
       const file: iFile = {
         uuid: uuid(),
-        label: metadata?.tags?.title || fileToFormat.name,
+        label: metadata?.tags?.title || fileToFormat.name || fileToFormat.label,
         path: fileToFormat.path,
         type: fileToFormat.type,
         size: fileToFormat.size,
-        album: metadata?.tags?.album,
-        artist: metadata?.tags?.artist,
-        genre: metadata?.tags?.genre,
+        album: metadata?.tags?.album || 'inconnu',
+        artist: metadata?.tags?.artist || 'inconnu',
+        genre: metadata?.tags?.genre || 'inconnu',
       }
 
       return file
@@ -314,7 +322,7 @@ export const usePlaylistsStore = defineStore('playlists', {
         }
       }
     },
-    async addFilesToPlaylist(files: iFile[]) {
+    async addFilesToPlaylist(files: iFile[], playlist?: iPlaylist) {
       this.refreshCovers = false
       if (!playlistService) {
         playlistService = new PlaylistsService()
@@ -323,14 +331,23 @@ export const usePlaylistsStore = defineStore('playlists', {
       if (files?.length <= 0) return
       const formattedFiles = Array.from(files)
 
-      const newPlaylist: iPlaylist = { ...this.selectedPlaylist }
+      const newPlaylist: iPlaylist = playlist || { ...this.selectedPlaylist }
+      let audio: HTMLAudioElement = new Audio()
       await Promise.all(formattedFiles.map(async (file) => {
         if (!newPlaylist.files) newPlaylist.files = []
-        const result = await this.formatFile(file)
+        let result = null
+        try {
+          result = await this.formatFile(file)
+        } catch (error) {
+          console.error(error)
+        }
 
         if (result) {
 
-          let audio: HTMLAudioElement | null = new Audio(result.path)
+          if (!audio) {
+            audio = new Audio()
+          }
+          audio.src = result.path
           const getDuration = () => {
             return new Promise((resolve) => {
               if (audio) {
@@ -381,6 +398,77 @@ export const usePlaylistsStore = defineStore('playlists', {
         }
         reader.readAsDataURL(coverFile)
       })
+    },
+    importLibrary(): Promise<void> {
+      return new Promise(async (resolve, reject) => {
+        const input = document.createElement('input')
+        input.type = 'file'
+        input.accept = 'application/json'
+        input.multiple = false
+
+        input.onchange = async (e: Event) => {
+          if (e?.target?.files && e?.target?.files.length > 0) {
+            const fileReader = new FileReader()
+            let library = null
+            fileReader.onload = async (event) => {
+              try {
+                library = JSON.parse(event?.target?.result as string) as iPlaylist[] | null
+                if (library?.length || 0 > 0) {
+                  try {
+                    await this.deleteAllPlaylists(true)
+                    this.playlists = []
+                  } catch (error) {
+                    reject(error)
+                  }
+
+                  await Promise.all(library.map(async (playlist: iPlaylist) => {
+                    try {
+                      await this.create(playlist)
+                    } catch (error) {
+
+                      reject(error)
+                    }
+                  }))
+
+                  try {
+                    cacheImageService.setForceUpdate()
+                    await this.refreshCache()
+                  } catch (error) {
+                    reject(error)
+                  }
+                  resolve()
+                }
+              } catch (error) {
+                reject(`importLibrary error ${error}`)
+              }
+            }
+            fileReader.onerror = (error) => {
+              reject(`importLibrary fileReader error ${error}`)
+            }
+            const { files } = <HTMLInputElement>e?.target
+            if (files?.length || 0 > 0) {
+              fileReader.readAsText(files[0])
+            }
+          } else {
+            reject('Unable to load library')
+          }
+        }
+
+        input.click()
+      })
+
+    },
+    async deleteAllPlaylists(skeepConfirmation = false) {
+      if (skeepConfirmation || confirm('Vous allez supprimer toutes les playlists. On y va ?')) {
+        try {
+          await playlistService?.deleteDatabase()
+          localStorage.removeItem('lastPlaylists')
+          this.playlists = null
+          this.lastPlaylists = null
+        } catch (error) {
+          console.error('Can\'t delete library', error)
+        }
+      }
     }
   },
 })

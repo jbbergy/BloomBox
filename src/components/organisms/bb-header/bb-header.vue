@@ -23,19 +23,25 @@
         <div class="bb-header__settings">
           <BBButton
             noBg
+            :disabled="globalStore.isLoading"
+            :isLoading="globalStore.loadingTarget === 'export'"
             @click="exportLibrary"
           >
             Exporter la bibliothéque
           </BBButton>
           <BBButton
             noBg
-            @click="isSettingsModalOpen = false"
+            :disabled="globalStore.isLoading"
+            :isLoading="globalStore.loadingTarget === 'import'"
+            @click="importLibrary"
           >
             Importer la bibliothéque
           </BBButton>
           <BBButton
             noBg
-            @click="isSettingsModalOpen = false"
+            :disabled="globalStore.isLoading"
+            :isLoading="globalStore.loadingTarget === 'delete'"
+            @click="deleteLibrary"
           >
             Effacer la bibliothéque
           </BBButton>
@@ -57,14 +63,19 @@ import InlineSvg from 'vue-inline-svg'
 import BBButton from '../../atoms/bb-button/bb-button.vue'
 import IconSetting from '../../../assets/icons/i-settings.svg'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
-import { D } from 'app/dist/electron/UnPackaged/assets/index.13a170d4'
+import { useGlobalStore } from '../../../stores/global.store'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const playlistsStore = usePlaylistsStore()
+const globalStore = useGlobalStore()
 
 const isSettingsModalOpen = ref<boolean>(false)
 
 async function exportLibrary(): Promise<string> {
   return new Promise((resolve) => {
+    globalStore.isLoading = true
+    globalStore.loadingTarget = 'export'
     const library = JSON.stringify(playlistsStore.playlists)
     const blobLibrary = new Blob([library], { type: 'application/json' })
     const aElement = document.createElement('a')
@@ -73,8 +84,39 @@ async function exportLibrary(): Promise<string> {
     document.body.appendChild(aElement)
     aElement.click()
     document.body.removeChild(aElement)
+    globalStore.isLoading = false
+    globalStore.loadingTarget = null
     resolve(aElement.download)
   })
+}
+
+async function importLibrary() {
+  isSettingsModalOpen.value = false
+  globalStore.isLoading = true
+  globalStore.loadingTarget = 'import'
+  try {
+    await playlistsStore.importLibrary()
+  } catch (error) {
+    console.error('importLibrary error', error)
+  } finally {
+    globalStore.isLoading = false
+    globalStore.loadingTarget = null
+    globalStore.setRefreshSidebar()
+    router.push({ name: 'home' })
+  }
+}
+
+async function deleteLibrary() {
+  globalStore.isLoading = true
+  globalStore.loadingTarget = 'delete'
+  try {
+    await playlistsStore.deleteAllPlaylists()
+  } catch (error) {
+    console.error('deleteLibrary error', error)
+  } finally {
+    globalStore.isLoading = false
+    globalStore.loadingTarget = null
+  }
 }
 </script>
 

@@ -92,8 +92,19 @@ export class PlaylistsService {
     return tx.complete
   }
 
-  async deleteDatabase() {
-    await deleteDB(DATABASE_NAME)
+  async deleteDatabase(): Promise<boolean> {
+    const db = await openDB(DATABASE_NAME, 1)
+
+    const transaction = db.transaction(db.objectStoreNames, 'readwrite')
+
+    Array.from(transaction.objectStoreNames).forEach((objectStoreName) => {
+      transaction.objectStore(objectStoreName).clear()
+    })
+
+    transaction.commit()
+
+    db.close()
+    return true
   }
 
   async findByUUID(uuid: string): Promise<iPlaylist> {

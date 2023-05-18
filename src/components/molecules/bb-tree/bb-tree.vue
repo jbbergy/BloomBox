@@ -8,9 +8,9 @@
       :key="playlist.uuid"
       :id="playlist.uuid"
       :class="[
-        'bb-tree__item',
-        currentPlaylistId === playlist.uuid && 'bb-tree__item--selected'
-      ]"
+          'bb-tree__item',
+          currentPlaylistId === playlist.uuid && 'bb-tree__item--selected'
+        ]"
       @dragstart="onDragStart(playlist)"
       @dragover.prevent
       @drop="onDrop(playlist)"
@@ -260,9 +260,6 @@ const editPlaylistcover = () => {
 }
 
 watch(selectedNode, (node: iPlaylist) => {
-  console.log('🚀 ~ watch ~ selectedNode:', selectedNode)
-  console.log('🚀 ~ watch ~ router:', router.currentRoute.value.name)
-
   if (!node || !playlistsStore.playlists) return
   const playlist: iPlaylist | null = playlistsStore.playlists.find((p) => p.uuid === node.uuid) || null
   playlistsStore.selectedPlaylist = playlist
