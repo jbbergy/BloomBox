@@ -180,7 +180,7 @@ export const usePlaylistsStore = defineStore('playlists', {
     },
     async refreshCache() {
       globalStore.isLoading = true
-      globalStore.loadingMessage = "Chargement...mise à jour du cache"
+      globalStore.loadingMessage = 'Chargement...mise à jour du cache'
       globalStore.loadingTarget = 'global'
       if (this.playlists && this.playlists?.length > 0) {
         await Promise.all(this.playlists.map(async (p: iPlaylist) => {
@@ -323,6 +323,10 @@ export const usePlaylistsStore = defineStore('playlists', {
       }
     },
     async addFilesToPlaylist(files: iFile[], playlist?: iPlaylist) {
+      globalStore.isLoading = true
+      globalStore.loadingMessage = 'Chargement...mise à jour du cache'
+      globalStore.loadingTarget = 'global'
+
       this.refreshCovers = false
       if (!playlistService) {
         playlistService = new PlaylistsService()
@@ -332,22 +336,14 @@ export const usePlaylistsStore = defineStore('playlists', {
       const formattedFiles = Array.from(files)
 
       const newPlaylist: iPlaylist = playlist || { ...this.selectedPlaylist }
-      let audio: HTMLAudioElement = new Audio()
+      const audio: HTMLAudioElement = new Audio()
       await Promise.all(formattedFiles.map(async (file) => {
         if (!newPlaylist.files) newPlaylist.files = []
-        let result = null
-        try {
-          result = await this.formatFile(file)
-        } catch (error) {
-          console.error(error)
-        }
+        const result = await this.formatFile(file)
 
         if (result) {
 
-          if (!audio) {
-            audio = new Audio()
-          }
-          audio.src = result.path
+          let audio: HTMLAudioElement | null = new Audio(result.path)
           const getDuration = () => {
             return new Promise((resolve) => {
               if (audio) {
@@ -385,6 +381,10 @@ export const usePlaylistsStore = defineStore('playlists', {
       cacheImageService.setForceUpdate()
       await this.refreshCache()
       this.refreshCovers = true
+
+      globalStore.isLoading = false
+      globalStore.loadingTarget = null
+      globalStore.loadingMessage = null
     },
     async updateCover(coverFile) {
       return new Promise((resolve) => {
