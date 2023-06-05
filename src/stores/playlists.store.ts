@@ -386,13 +386,13 @@ export const usePlaylistsStore = defineStore('playlists', {
       globalStore.loadingTarget = null
       globalStore.loadingMessage = null
     },
-    async updateCover(coverFile) {
+    async updateCover(coverFile: any) {
       return new Promise((resolve) => {
         const reader = new FileReader()
         let base64 = null
         reader.onload = (fileLoadedEvent) => {
-          base64 = fileLoadedEvent.target.result
-          cacheImageService.addToCache(this.selectedPlaylist?.label, base64)
+          base64 = fileLoadedEvent?.target?.result
+          cacheImageService.addToCache(this.selectedPlaylist?.label as string, base64 as string)
           cacheImageService.setForceUpdate()
           resolve(base64)
         }
