@@ -106,10 +106,10 @@ export const usePlaylistsStore = defineStore('playlists', {
       }
       return result
     },
-    getPlaylistCover: () => (playlist: iPlaylist) => {
+    getPlaylistCover: async () => async (playlist: iPlaylist) => {
       if (playlist.label === FAV_LABEL) return playlist.img
-
-      const labelCover = cacheImageService.getFromCache(playlist.label)
+      await cacheImageService.init()
+      const labelCover = await cacheImageService.getFromCache(playlist.label)
       let albumCover = null
       if (!labelCover && playlist.files?.length || 0 > 0) {
         const firstfile = playlist.files[0] as iFile
@@ -147,6 +147,7 @@ export const usePlaylistsStore = defineStore('playlists', {
         await playlistService.init()
       }
 
+      await cacheImageService.init()
       const lastUpdateDate = cacheImageService.getLastUpdate()
       if (!lastUpdateDate || (lastUpdateDate && isOlderThanHours(lastUpdateDate))) {
         this.needCacheUpdate = true
@@ -179,6 +180,7 @@ export const usePlaylistsStore = defineStore('playlists', {
       }
     },
     async refreshCache() {
+      await cacheImageService.init()
       globalStore.isLoading = true
       globalStore.loadingMessage = 'Chargement...mise à jour du cache'
       globalStore.loadingTarget = 'global'
@@ -187,10 +189,11 @@ export const usePlaylistsStore = defineStore('playlists', {
           if ((p.files?.length || -1) > 0 && Array.isArray(p.files)) {
             await Promise.all(
               p.files.map(async f => {
-                if (f.album && !cacheImageService.getFromCache(f.album)) {
+                const cacheResponse = await cacheImageService.getFromCache(f.album)
+                if (f.album && !cacheResponse?.data) {
                   const img = await getCoverBase64(f.path)
                   if (img) {
-                    cacheImageService.addToCache(f.album, img)
+                    await cacheImageService.addToCache(f.album, img)
                   }
                 }
               })
@@ -390,9 +393,10 @@ export const usePlaylistsStore = defineStore('playlists', {
       return new Promise((resolve) => {
         const reader = new FileReader()
         let base64 = null
-        reader.onload = (fileLoadedEvent) => {
+        reader.onload = async (fileLoadedEvent) => {
           base64 = fileLoadedEvent?.target?.result
-          cacheImageService.addToCache(this.selectedPlaylist?.label as string, base64 as string)
+          await cacheImageService.init()
+          await cacheImageService.addToCache(this.selectedPlaylist?.label as string, base64 as string)
           cacheImageService.setForceUpdate()
           resolve(base64)
         }

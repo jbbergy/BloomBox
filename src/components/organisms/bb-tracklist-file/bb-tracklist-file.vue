@@ -53,6 +53,7 @@ import ImgCover from '../../../assets/img/cover.jpg'
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
 import { CacheImageService } from '../../../services/cache/images.cache.service'
+import { iCache } from 'src/services/interfaces/cache.interface'
 
 const cacheImageService = new CacheImageService()
 const playQueueStore = usePlayQueueStore()
@@ -113,8 +114,12 @@ const onCoverLoadError = (event) => {
   }
 }
 
-const updatePicture = () => {
-  trackPicture.value = cacheImageService.getFromCache(props?.file?.album || 'inconnu') || PicturePlaceholder
+const updatePicture = async () => {
+  if (!cacheImageService.getIsInit()) {
+    cacheImageService.init()
+  }
+  const cacheResponse: iCache | null = await cacheImageService.getFromCache(props?.file?.album || 'inconnu')
+  trackPicture.value = cacheResponse?.data || PicturePlaceholder
 }
 
 const getFileDuration = (duration) => {

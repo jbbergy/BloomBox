@@ -3,6 +3,7 @@ import { iFile } from 'src/services/interfaces/file.interface'
 import { CacheImageService } from '../services/cache/images.cache.service'
 import CoverImage from '../assets/img/cover.jpg'
 import { getRandomValue } from '../utils/random'
+import { iCache } from 'src/services/interfaces/cache.interface'
 
 export const usePlayQueueStore = defineStore('playQueue', {
   state: () => ({
@@ -14,11 +15,13 @@ export const usePlayQueueStore = defineStore('playQueue', {
     shuffle: false
   }),
   actions: {
-    getCurrentCover() {
+    async getCurrentCover() {
       this.currentCover = CoverImage
       if (!this.playingFile || !this.playingFile.album) return null
       const cacheImageService = new CacheImageService()
-      this.currentCover = cacheImageService.getFromCache(this.playingFile.album)
+      cacheImageService.init()
+      const cacheResponse: iCache | null = await cacheImageService.getFromCache(this.playingFile.album)
+      this.currentCover = cacheResponse?.data
     },
     addToQueue(files: iFile[]) {
       this.queue = []

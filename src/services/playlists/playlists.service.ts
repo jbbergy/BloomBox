@@ -1,5 +1,5 @@
 import { iPlaylist } from './../interfaces/playlist.interface'
-import { openDB, deleteDB } from 'idb'
+import { openDB } from 'idb'
 import { PLAYLIST_STORE_NAME, iBloomBoxDB } from '../interfaces/playlists-db.interface'
 
 const DATABASE_NAME = 'BBdb'
