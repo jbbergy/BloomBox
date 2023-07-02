@@ -7,14 +7,14 @@ import { iPlaylist } from '../services/interfaces/playlist.interface'
 import { iFile } from '../services/interfaces/file.interface'
 import { PlaylistsService } from '../services/playlists/playlists.service'
 import { readMetadata } from '../services/metadata/metadata.service'
-import { CacheImageService } from '../services/cache/images.cache.service'
+import { useCacheStore } from './cache.store'
 import ImgCover from '../assets/img/cover.jpg'
 import ImgFavCover from '../assets/img/fav-cover.png'
 import { useGlobalStore } from './global.store'
 
+let playlistService: PlaylistsService
 const FAV_LABEL = 'Titres likés'
-let playlistService: PlaylistsService | null = null
-const cacheImageService = new CacheImageService()
+const cacheStore = useCacheStore()
 const globalStore = useGlobalStore()
 
 const isOlderThanHours = (date: dayjs.Dayjs, hours = 24) => {
@@ -45,7 +45,7 @@ const getCoverBase64 = async (filePath: string) => {
 
 export const usePlaylistsStore = defineStore('playlists', {
   state: () => ({
-    playlists: [] as iPlaylist[] | null,
+    playlists: [] as iPlaylist[],
     lastPlaylists: [] as iPlaylist[] | null,
     filter: null as string | null,
     impageCache: {},
@@ -53,6 +53,7 @@ export const usePlaylistsStore = defineStore('playlists', {
     currentPlaylist: null as iPlaylist | null,
     needCacheUpdate: false,
     refreshCovers: false,
+    refreshPlaylistsToken: uuid(),
     sortOrder: 'ORDER' as string,
   }),
   getters: {
@@ -106,21 +107,30 @@ export const usePlaylistsStore = defineStore('playlists', {
       }
       return result
     },
-    getPlaylistCover: async () => async (playlist: iPlaylist) => {
+
+  },
+  actions: {
+    getPlaylistCover: async (playlist: iPlaylist) => {
       if (playlist.label === FAV_LABEL) return playlist.img
-      await cacheImageService.init()
-      const labelCover = await cacheImageService.getFromCache(playlist.label)
+
+      const labelCover = await cacheStore.get(playlist.label)
+
       let albumCover = null
-      if (!labelCover && playlist.files?.length || 0 > 0) {
+      if (
+        !labelCover
+        && playlist?.files?.length
+      ) {
         const firstfile = playlist.files[0] as iFile
-        albumCover = cacheImageService.getFromCache(firstfile.album)
+
+        if (firstfile?.artist && firstfile?.album) {
+          albumCover = await cacheStore.get(firstfile.album)
+        }
       }
       const cover = labelCover || albumCover
       const img = cover || ImgCover
+
       return img
-    }
-  },
-  actions: {
+    },
     addLastPlaylist(playlist: iPlaylist) {
       if (
         !this.lastPlaylists
@@ -139,16 +149,10 @@ export const usePlaylistsStore = defineStore('playlists', {
       localStorage.setItem('lastPlaylists', JSON.stringify(this.lastPlaylists))
     },
     async init() {
-
+      playlistService = new PlaylistsService()
       this.needCacheUpdate = false
 
-      if (!playlistService) {
-        playlistService = new PlaylistsService()
-        await playlistService.init()
-      }
-
-      await cacheImageService.init()
-      const lastUpdateDate = cacheImageService.getLastUpdate()
+      const lastUpdateDate = cacheStore.getLastUpdate
       if (!lastUpdateDate || (lastUpdateDate && isOlderThanHours(lastUpdateDate))) {
         this.needCacheUpdate = true
       }
@@ -167,7 +171,7 @@ export const usePlaylistsStore = defineStore('playlists', {
           uuid: uuid(),
           img: ImgFavCover
         }
-        this.create(favPlaylist)
+        await this.create(favPlaylist)
       }
 
       if (this.needCacheUpdate) {
@@ -180,38 +184,58 @@ export const usePlaylistsStore = defineStore('playlists', {
       }
     },
     async refreshCache() {
-      await cacheImageService.init()
       globalStore.isLoading = true
       globalStore.loadingMessage = 'Chargement...mise à jour du cache'
       globalStore.loadingTarget = 'global'
-      if (this.playlists && this.playlists?.length > 0) {
-        await Promise.all(this.playlists.map(async (p: iPlaylist) => {
-          if ((p.files?.length || -1) > 0 && Array.isArray(p.files)) {
-            await Promise.all(
-              p.files.map(async f => {
-                const cacheResponse = await cacheImageService.getFromCache(f.album)
-                if (f.album && !cacheResponse?.data) {
-                  const img = await getCoverBase64(f.path)
-                  if (img) {
-                    await cacheImageService.addToCache(f.album, img)
-                  }
-                }
-              })
-            )
-            cacheImageService.setLastUpdate()
-            this.needCacheUpdate = false
-          }
-        }))
+
+      const files: iFile[] = this.playlists.flatMap((playlist: iPlaylist) => {
+        return playlist.files as iFile[]
+      })
+
+      if (files?.length) {
+        const filesUnique = files
+          .filter((file: iFile, index: number, array: iFile[]) => {
+            const isDuplicate = array.findIndex((f: iFile) => {
+              return file?.album && f?.album === file?.album
+            }) !== index
+
+            return !isDuplicate
+          })
+
+        if (filesUnique?.length) {
+          await Promise.all(filesUnique.map(async (file) => {
+            if (!file.album) return
+            const cachedFile = await cacheStore.get(file.album)
+            if (!cachedFile) {
+              const img = await getCoverBase64(file.path)
+              if (img) {
+                await cacheStore.add({
+                  identifier: file.album,
+                  data: img
+                })
+              }
+            }
+          }))
+
+          await this.loadPlaylistsImg()
+        }
       }
+
+      cacheStore.setLastUpdate()
+      this.needCacheUpdate = false
       globalStore.isLoading = false
       globalStore.loadingTarget = null
       globalStore.loadingMessage = null
     },
-    async create(playlist: iPlaylist) {
-      if (!playlistService) {
-        playlistService = new PlaylistsService()
-        await playlistService.init()
+    async loadPlaylistsImg() {
+      if (this.playlists?.length) {
+        this.playlists.forEach(async (playlist) => {
+          playlist.img = await this.getPlaylistCover(playlist) as string
+        })
+        this.refreshPlaylistsToken = uuid()
       }
+    },
+    async create(playlist: iPlaylist) {
       if (!this.playlists) return
 
       try {
@@ -224,7 +248,7 @@ export const usePlaylistsStore = defineStore('playlists', {
       try {
         newPlaylist = await playlistService.findByUUID(playlist.uuid)
       } catch (error) {
-        console.error('ERROR playlist service create #2 : ', error)
+        console.error('ERROR playlist service create #2.1 : ', error)
       }
 
       if (!newPlaylist) return
@@ -234,15 +258,11 @@ export const usePlaylistsStore = defineStore('playlists', {
         const idx = this.playlists.findIndex(p => p.uuid === newPlaylist?.uuid)
         this.playlists[idx] = newPlaylist
       } catch (error) {
-        console.error('ERROR playlist service create #2 : ', error)
+        console.error('ERROR playlist service create #2.2 : ', error)
       }
-      cacheImageService.setForceUpdate()
+      cacheStore.setForceUpdate()
     },
     async delete(playlist: iPlaylist) {
-      if (!playlistService) {
-        playlistService = new PlaylistsService()
-        await playlistService.init()
-      }
       if (!this.playlists) return
 
       this.playlists.push(playlist as never)
@@ -253,10 +273,6 @@ export const usePlaylistsStore = defineStore('playlists', {
       }
     },
     async deleteFile(filetoDelete: iFile) {
-      if (!playlistService) {
-        playlistService = new PlaylistsService()
-        await playlistService.init()
-      }
       let idxTodelete = null
       if (
         this.selectedPlaylist
@@ -269,15 +285,11 @@ export const usePlaylistsStore = defineStore('playlists', {
           this.selectedPlaylist.files.splice(idxTodelete, 1)
           playlistService.update(this.selectedPlaylist.key, this.selectedPlaylist)
         }
-        cacheImageService.setForceUpdate()
+        cacheStore.setForceUpdate()
         await this.refreshCache()
       }
     },
     async formatFile(fileToFormat: iFile) {
-      if (!playlistService) {
-        playlistService = new PlaylistsService()
-        await playlistService.init()
-      }
       let metadata: iMetadata | null = null
       try {
         metadata = await readMetadata(fileToFormat.path)
@@ -331,15 +343,10 @@ export const usePlaylistsStore = defineStore('playlists', {
       globalStore.loadingTarget = 'global'
 
       this.refreshCovers = false
-      if (!playlistService) {
-        playlistService = new PlaylistsService()
-        await playlistService.init()
-      }
       if (files?.length <= 0) return
       const formattedFiles = Array.from(files)
 
       const newPlaylist: iPlaylist = playlist || { ...this.selectedPlaylist }
-      const audio: HTMLAudioElement = new Audio()
       await Promise.all(formattedFiles.map(async (file) => {
         if (!newPlaylist.files) newPlaylist.files = []
         const result = await this.formatFile(file)
@@ -381,7 +388,7 @@ export const usePlaylistsStore = defineStore('playlists', {
       } catch (error) {
         console.error('ERROR playlist service addFilesToPlaylist #2 : ', error)
       }
-      cacheImageService.setForceUpdate()
+      cacheStore.setForceUpdate()
       await this.refreshCache()
       this.refreshCovers = true
 
@@ -395,9 +402,11 @@ export const usePlaylistsStore = defineStore('playlists', {
         let base64 = null
         reader.onload = async (fileLoadedEvent) => {
           base64 = fileLoadedEvent?.target?.result
-          await cacheImageService.init()
-          await cacheImageService.addToCache(this.selectedPlaylist?.label as string, base64 as string)
-          cacheImageService.setForceUpdate()
+          await cacheStore.add({
+            identifier: this.selectedPlaylist?.label as string,
+            data: base64 as string
+          })
+          cacheStore.setForceUpdate()
           resolve(base64)
         }
         reader.readAsDataURL(coverFile)
@@ -417,7 +426,7 @@ export const usePlaylistsStore = defineStore('playlists', {
             fileReader.onload = async (event) => {
               try {
                 library = JSON.parse(event?.target?.result as string) as iPlaylist[] | null
-                if (library?.length || 0 > 0) {
+                if (library?.length && library.length > 0) {
                   try {
                     await this.deleteAllPlaylists(true)
                     this.playlists = []
@@ -429,13 +438,12 @@ export const usePlaylistsStore = defineStore('playlists', {
                     try {
                       await this.create(playlist)
                     } catch (error) {
-
                       reject(error)
                     }
                   }))
 
                   try {
-                    cacheImageService.setForceUpdate()
+                    cacheStore.setForceUpdate()
                     await this.refreshCache()
                   } catch (error) {
                     reject(error)
@@ -472,6 +480,24 @@ export const usePlaylistsStore = defineStore('playlists', {
         } catch (error) {
           console.error('Can\'t delete library', error)
         }
+      }
+    },
+    async findByUUID(uuid: string) {
+      if (!uuid) return null
+      try {
+        return await playlistService.findByUUID(uuid)
+      } catch (error) {
+        throw error
+      }
+    },
+    async update(key: number, data: iPlaylist) {
+      if (!key || !data) return null
+      try {
+        return await playlistService.update(key, data)
+      } catch (error) {
+        throw error
+      } finally {
+        this.refreshPlaylistsToken = uuid()
       }
     }
   },

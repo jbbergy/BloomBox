@@ -52,10 +52,10 @@ import IconPlay from '../../../assets/icons/i-play.svg'
 import ImgCover from '../../../assets/img/cover.jpg'
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
-import { CacheImageService } from '../../../services/cache/images.cache.service'
+import { useCacheStore } from '../../../stores/cache.store'
 import { iCache } from 'src/services/interfaces/cache.interface'
 
-const cacheImageService = new CacheImageService()
+const cacheStore = useCacheStore()
 const playQueueStore = usePlayQueueStore()
 const playlistsStore = usePlaylistsStore()
 const trackPicture = ref<string | null>(PicturePlaceholder)
@@ -107,7 +107,6 @@ const trackTime = computed(() => {
 })
 
 const onCoverLoadError = (event) => {
-  console.error('bb-tracklist-file cover error', event)
   if (event.target) {
     const target = event.target as HTMLElement
     target.src = ImgCover
@@ -115,11 +114,10 @@ const onCoverLoadError = (event) => {
 }
 
 const updatePicture = async () => {
-  if (!cacheImageService.getIsInit()) {
-    cacheImageService.init()
+  if (props?.file?.album) {
+    let cacheResponse: iCache | null = await cacheStore.get(props.file.album)
+    trackPicture.value = cacheResponse || PicturePlaceholder
   }
-  const cacheResponse: iCache | null = await cacheImageService.getFromCache(props?.file?.album || 'inconnu')
-  trackPicture.value = cacheResponse?.data || PicturePlaceholder
 }
 
 const getFileDuration = (duration) => {

@@ -5,7 +5,7 @@
   >
     <img
       v-if="!isSearchHeader"
-      :src="playlistsStore.getPlaylistCover(playlistsStore.selectedPlaylist)"
+      :src="playlistCover"
       class="bb-tracklist-header__cover"
     />
     <div class="bb-tracklist-header__text">
@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { computed, watch, ref } from 'vue'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
 
 const props = defineProps({
@@ -42,11 +42,24 @@ const props = defineProps({
 })
 
 const playlistsStore = usePlaylistsStore()
+const playlistCover = ref()
 
 const nbFiles = computed(() => {
   if (props.title) return 0
   return playlistsStore.selectedPlaylist?.files?.length || 0
 })
+
+watch(
+  () => playlistsStore.selectedPlaylist,
+  async (value) => {
+    if (value) {
+      playlistCover.value = await playlistsStore.getPlaylistCover(value)
+    }
+  },
+  {
+    immediate: true
+  }
+)
 
 </script>
 

@@ -1,9 +1,11 @@
 import { defineStore } from 'pinia'
 import { iFile } from 'src/services/interfaces/file.interface'
-import { CacheImageService } from '../services/cache/images.cache.service'
+import { useCacheStore } from './cache.store'
 import CoverImage from '../assets/img/cover.jpg'
 import { getRandomValue } from '../utils/random'
 import { iCache } from 'src/services/interfaces/cache.interface'
+
+const cacheStore = useCacheStore()
 
 export const usePlayQueueStore = defineStore('playQueue', {
   state: () => ({
@@ -18,10 +20,8 @@ export const usePlayQueueStore = defineStore('playQueue', {
     async getCurrentCover() {
       this.currentCover = CoverImage
       if (!this.playingFile || !this.playingFile.album) return null
-      const cacheImageService = new CacheImageService()
-      cacheImageService.init()
-      const cacheResponse: iCache | null = await cacheImageService.getFromCache(this.playingFile.album)
-      this.currentCover = cacheResponse?.data
+      const cacheResponse: string | null = await cacheStore.get(this.playingFile.album)
+      this.currentCover = cacheResponse
     },
     addToQueue(files: iFile[]) {
       this.queue = []

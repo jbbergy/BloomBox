@@ -1,13 +1,19 @@
 <template>
   <div class="bb-playlist-create">
-    <BBButton class="bb-playlist-create__btn--add" @click="displayCreateModal">
-      <inline-svg :src="IconPlus" aria-label="Créer une playlist" />
+    <BBButton
+      class="bb-playlist-create__btn--add"
+      @click="displayCreateModal"
+    >
+      <inline-svg
+        :src="IconPlus"
+        aria-label="Créer une playlist"
+      />
       Créer un playlist
     </BBButton>
   </div>
-  
+
   <teleport to="body">
-    <BBModal 
+    <BBModal
       v-if="isCreateModalOpen"
       @keyup.escape="isCreateModalOpen = false"
     >
@@ -64,12 +70,19 @@ function hideCreateModal() {
 
 function createPlaylist() {
   if (!playlistName.value) return
+  let maxOrder: Partial<iPlaylist> = {
+    order: 0
+  }
+  if (!playlistsStore.playlists) {
+    playlistsStore.playlists = []
+  } else {
+    maxOrder = playlistsStore.playlists.reduce((prev, current) => (prev.order > current.order) ? prev : current)
+  }
 
-  const maxOrder = playlistsStore.playlists.reduce((prev, current) => (prev.order > current.order) ? prev : current)
   const newPlaylist: iPlaylist = {
     label: playlistName.value,
     uuid: uuid(),
-    order: (maxOrder.order || -1 ) + 1
+    order: (maxOrder.order || -1) + 1
   }
 
   playlistsStore.create(newPlaylist)
@@ -97,6 +110,7 @@ function createPlaylist() {
   &__btn {
     &--confirm {
       filter: saturate(0.5);
+
       svg {
         fill: $positive;
       }
@@ -104,6 +118,7 @@ function createPlaylist() {
 
     &--abort {
       filter: saturate(0.5);
+
       svg {
         fill: $negative;
       }

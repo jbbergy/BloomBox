@@ -14,7 +14,7 @@
       >
         <div class="home-page__playlist-img">
           <img
-            :src="playlistsStore.getPlaylistCover(playlist)"
+            :src="playlist.img"
             @error="onCoverLoadError($event)"
           />
         </div>

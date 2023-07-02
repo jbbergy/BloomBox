@@ -6,6 +6,17 @@ export const PLAYLIST_STORE_NAME = 'playlistsStore'
 export const CACHE_STORE_NAME = 'cacheStore'
 
 export interface iBloomBoxDB extends DBSchema {
-  playlistsStore: iPlaylist,
-  cacheStore: iCache
+  [PLAYLIST_STORE_NAME]: {
+    value: iPlaylist
+    key: string
+  }
+}
+export interface iBloomBoxDBCache extends DBSchema {
+  [CACHE_STORE_NAME]: {
+    value: iCache
+    key: string
+    indexes: {
+      'identifier': string
+    }
+  }
 }

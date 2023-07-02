@@ -3,15 +3,14 @@ import { openDB } from 'idb'
 import { PLAYLIST_STORE_NAME, iBloomBoxDB } from '../interfaces/playlists-db.interface'
 
 const DATABASE_NAME = 'BBdb'
-
 export class PlaylistsService {
   private dbPromise: Promise<IDBDatabase<iBloomBoxDB>>
 
-  async init() {
-    this.dbPromise = await openDB<iBloomBoxDB>(DATABASE_NAME, 1, {
+  constructor() {
+    this.dbPromise = openDB<iBloomBoxDB>(DATABASE_NAME, 1, {
       upgrade(db) {
         if (!db.objectStoreNames.contains(PLAYLIST_STORE_NAME)) {
-          db.createObjectStore(PLAYLIST_STORE_NAME, { keyPath: 'key', autoIncrement: true })
+          const store = db.createObjectStore(PLAYLIST_STORE_NAME, { keyPath: 'key', autoIncrement: true })
         }
       }
     })

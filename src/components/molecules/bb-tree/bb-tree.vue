@@ -1,16 +1,17 @@
 <template>
   <div
-    v-if="hasPlayists"
+    v-if="hasPlaylists"
     class="bb-tree"
+    :key="refreshToken"
   >
     <div
       v-for="playlist in sortedPlaylists"
       :key="playlist.uuid"
       :id="playlist.uuid"
       :class="[
-          'bb-tree__item',
-          currentPlaylistId === playlist.uuid && 'bb-tree__item--selected'
-        ]"
+        'bb-tree__item',
+        currentPlaylistId === playlist.uuid && 'bb-tree__item--selected'
+      ]"
       @dragstart="onDragStart(playlist)"
       @dragover.prevent
       @drop="onDrop(playlist)"
@@ -23,7 +24,7 @@
     >
       <div class="bb-tree__img">
         <img
-          :src="playlistsStore.getPlaylistCover(playlist)"
+          :src="playlist.img"
           @error="onCoverLoadError($event)"
         />
       </div>
@@ -81,6 +82,7 @@
   </teleport>
 </template>
 <script lang="ts" setup>
+import { v4 as uuid } from 'uuid'
 import { computed, onBeforeMount, onMounted, watch, ref } from 'vue'
 import BBContextMenu from '../../atoms/bb-context-menu/bb-context-menu.vue'
 import BBInput from '../../atoms/bb-input/bb-input.vue'
@@ -89,17 +91,17 @@ import BBModal from '../../atoms/bb-modal/bb-modal.vue'
 import ImgCover from '../../../assets/img/cover.jpg'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
 import { usePlayQueueStore } from '../../../stores/play-queue.store'
-import { PlaylistsService } from '../../../services/playlists/playlists.service'
 import { useRouter } from 'vue-router'
 import { iPlaylist } from '../../../services/interfaces/playlist.interface'
 import { iFile } from '../../../services/interfaces/file.interface'
 import { getRandomValue } from '../../../utils/random'
+import { CacheImageService } from 'src/services/cache/images.cache.service'
 const selectedNode = ref<iPlaylist>()
 
 const router = useRouter()
 const playlistsStore = usePlaylistsStore()
 const playQueueStore = usePlayQueueStore()
-const playlistsService = new PlaylistsService()
+const cacheImageService = new CacheImageService()
 
 const firstPlaylistsLoad = ref(true)
 const draggingElement = ref<iPlaylist>()
@@ -122,11 +124,12 @@ const menuItems = ref([
 
 const modalCoverPreview = computed(() => {
   const newCover = newPlaylistCover.value?.path
-  const oldCover = playlistsStore.getPlaylistCover(playlistsStore.selectedPlaylist as iPlaylist)
-  return newCover || oldCover
+  return newCover || playlistsStore.selectedPlaylist?.img
 })
 
-const hasPlayists = computed(() => {
+const refreshToken = computed(() => playlistsStore.refreshPlaylistsToken)
+
+const hasPlaylists = computed(() => {
   if (sortedPlaylists.value) {
     return sortedPlaylists.value?.length > 0
   }
@@ -180,32 +183,44 @@ const updatePlaylistOrder = async (movedPlaylist: iPlaylist, replacedPlaylist: i
 }
 
 const updatePlaylist = async () => {
+  let doUpdate = false
   if (!playlistsStore.selectedPlaylist?.uuid) return
+  let foundItem: iPlaylist | null = null
+  try {
+    foundItem = await playlistsStore.findByUUID(playlistsStore.selectedPlaylist.uuid)
+  } catch (error) {
+    console.error(error)
+  }
+
   if (newPlaylistName.value) {
-    let foundItem: iPlaylist | null = null
-    try {
-      foundItem = await playlistsService.findByUUID(playlistsStore.selectedPlaylist.uuid)
-    } catch (error) {
-      console.error(error)
-    }
 
     if (!foundItem) return
 
     foundItem.label = newPlaylistName.value
+    doUpdate = true
+  }
 
+  if (isUpdatePlaylistCover.value && foundItem) {
+    const base64 = await playlistsStore.updateCover(newPlaylistCover.value)
+    foundItem.img = base64 as string
+
+    const storeItemIdx = playlistsStore.playlists.findIndex((playlist) => playlist.uuid === playlistsStore.selectedPlaylist?.uuid)
+    if (storeItemIdx > -1 && foundItem) {
+      playlistsStore.playlists[storeItemIdx] = foundItem
+    }
+  }
+
+  if (doUpdate && foundItem) {
     try {
-      await playlistsService.update(foundItem.key, foundItem)
-      await playlistsStore.init()
+      await playlistsStore.update(foundItem.key as number, foundItem)
     } catch (error) {
       console.error(error)
     }
   }
 
-  if (isUpdatePlaylistCover.value) {
-    await playlistsStore.updateCover(newPlaylistCover.value)
-  }
   isUpdatePlaylistCover.value = false
   isEditPlaylistModalOpen.value = false
+  playlistsStore.refreshPlaylistsToken = uuid()
 }
 
 const onSelectNode = (playlist: iPlaylist, play = false) => {
@@ -223,9 +238,9 @@ const onSelectNode = (playlist: iPlaylist, play = false) => {
 const onDeletePlaylist = async (playlistId: string) => {
   if (!playlistId) return
   if (!confirm('Vous allez supprimer la playlist, on y va ?')) return
-  let foundItem: unknown = null
+  let foundItem: iPlaylist | null = null
   try {
-    foundItem = await playlistsService.findByUUID(playlistId)
+    foundItem = await playlistsStore.findByUUID(playlistId)
   } catch (error) {
     console.error(error)
   }
@@ -233,8 +248,7 @@ const onDeletePlaylist = async (playlistId: string) => {
   if (!foundItem) return
 
   try {
-    await playlistsService.delete(foundItem.key)
-    await playlistsStore.init()
+    await playlistsStore.delete(foundItem)
     router.push({ name: 'home' })
   } catch (error) {
     console.error(error)
@@ -272,7 +286,7 @@ watch(sortedPlaylists, (playlists: iPlaylist[]) => {
   if (playlists && !firstPlaylistsLoad.value) {
     playlists.forEach(async (playlist) => {
       try {
-        await playlistsService.update(playlist.key, playlist)
+        await playlistsStore.update(playlist.key, playlist)
         console.info('playlist updated successfuly', playlist.key, playlist.label)
       } catch (error) {
         console.error('Error updating playlist', playlist.key, playlist.label)
@@ -284,13 +298,14 @@ watch(sortedPlaylists, (playlists: iPlaylist[]) => {
   deep: true
 })
 
-onBeforeMount(async () => {
-  try {
-    await playlistsService.init()
-  } catch (error) {
-    console.error(error)
-  }
-})
+watch(
+  () => playlistsStore.selectedPlaylist?.label,
+  (value) => {
+    newPlaylistName.value = value
+  },
+  {
+    immediate: true
+  })
 
 onMounted(async () => {
   try {

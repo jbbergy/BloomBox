@@ -1,6 +1,6 @@
 
 export interface iCache {
   id?: number
-  key: string
+  identifier: string
   data: any
 }

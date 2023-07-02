@@ -1,66 +1,74 @@
 import { openDB } from 'idb'
 import dayjs from 'dayjs'
-import { CACHE_STORE_NAME, iBloomBoxDB } from '../interfaces/playlists-db.interface'
+import { CACHE_STORE_NAME, iBloomBoxDBCache } from '../interfaces/playlists-db.interface'
 import { iCache } from '../interfaces/cache.interface'
+import { Console } from 'console'
 
-const DATABASE_NAME = 'BBdb'
+const INDEX_NAME = "identifierIndex"
+const DATABASE_NAME = 'BBdbCache'
 const IMAGE_CACHE_LAST_UPDATE = 'image-cache-last-update'
 export class CacheImageService {
-  private isInit = false
-  private dbPromise: Promise<IDBDatabase<iBloomBoxDB>>
+  private dbPromise: Promise<IDBDatabase<iBloomBoxDBCache>>
 
-  async init() {
-    if (this.isInit) return
-    this.dbPromise = await openDB<iBloomBoxDB>(DATABASE_NAME, 1, {
+  constructor() {
+    this.dbPromise = openDB<iBloomBoxDBCache>(DATABASE_NAME, 1, {
       upgrade(db) {
         if (!db.objectStoreNames.contains(CACHE_STORE_NAME)) {
           const store = db.createObjectStore(CACHE_STORE_NAME, { keyPath: 'id', autoIncrement: true })
-          store.createIndex('keyIndex', 'key')
+          store.createIndex(INDEX_NAME as never, 'identifier')
         }
       }
     })
-    this.isInit = true
   }
 
-  getIsInit() {
-    return this.isInit
-  }
-
-  async addToCache(cacheObject: iCache) {
-    let db = null
+  async addToCache(cacheObject: iCache): Promise<void> {
+    console.log('cacheObject', cacheObject)
+    let isInCache = null
     try {
-      db = await this.dbPromise
+      isInCache = await this.getFromCache(cacheObject.identifier)
+      console.log('isInCache', isInCache)
     } catch (error) {
       throw error
     }
 
-    if (db) {
+    if (isInCache) {
+      return
+    }
+    const db = await this.dbPromise
+    const tx = db.transaction(CACHE_STORE_NAME, 'readwrite')
+    const store = tx.objectStore(CACHE_STORE_NAME)
+    await store.add(cacheObject)
+    await tx.complete
+  }
+
+  async update(key: number, data: string) {
+    try {
+      const db = await this.dbPromise
       const tx = db.transaction(CACHE_STORE_NAME, 'readwrite')
       const store = tx.objectStore(CACHE_STORE_NAME)
-      store.add(cacheObject)
+      store.put(data)
       return tx.complete
+    } catch (error) {
+      throw error
     }
   }
 
-  async getFromCache(key: string): Promise<iCache | null> {
-    if (key && key !== 'inconnu') {
-      let db = null
-      try {
-        db = await this.dbPromise
-      } catch (error) {
-        throw error
-      }
+  async deleteFromCache(key: string | number) {
+    const db = await this.dbPromise
+    const tx = db.transaction(CACHE_STORE_NAME, 'readwrite')
+    const store = tx.objectStore(CACHE_STORE_NAME)
+    store.delete(key)
+    return tx.complete
+  }
 
-      if (db) {
-        const tx = db.transaction(CACHE_STORE_NAME, 'readonly')
-        const store = tx.objectStore(CACHE_STORE_NAME)
-        const index = store.index('keyIndex');
-        try {
-          return await index.get(key)
-        } catch (error) {
-          throw error
-        }
-      }
+  async getFromCache(key: string): Promise<string | null> {
+    if (key && key !== 'inconnu') {
+      const db = await this.dbPromise
+      const tx = db.transaction(CACHE_STORE_NAME, 'readonly')
+      const store = tx.objectStore(CACHE_STORE_NAME)
+      const index = store.index(INDEX_NAME)
+      const result = await index.getAll(IDBKeyRange.only(key))
+      return result.length > 0 ? result[0].data : null
     }
     return null
   }

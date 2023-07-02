@@ -57,18 +57,20 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { nextTick, ref } from 'vue'
 import BBModal from '../../atoms/bb-modal/bb-modal.vue'
 import InlineSvg from 'vue-inline-svg'
 import BBButton from '../../atoms/bb-button/bb-button.vue'
 import IconSetting from '../../../assets/icons/i-settings.svg'
 import { usePlaylistsStore } from '../../../stores/playlists.store'
 import { useGlobalStore } from '../../../stores/global.store'
+import { useCacheStore } from '../../../stores/cache.store'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const playlistsStore = usePlaylistsStore()
 const globalStore = useGlobalStore()
+const cacheStore = useCacheStore()
 
 const isSettingsModalOpen = ref<boolean>(false)
 
@@ -101,7 +103,11 @@ async function importLibrary() {
   } finally {
     globalStore.isLoading = false
     globalStore.loadingTarget = null
-    globalStore.setRefreshSidebar()
+    await playlistsStore.loadPlaylistsImg()
+    await playlistsStore.refreshCache()
+    nextTick(() => {
+      globalStore.setRefreshSidebar()
+    })
     router.push({ name: 'home' })
   }
 }
