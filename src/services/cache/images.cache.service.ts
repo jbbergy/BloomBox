@@ -1,7 +1,7 @@
 import { openDB } from 'idb'
 import dayjs from 'dayjs'
-import { CACHE_STORE_NAME, iBloomBoxDBCache } from '../interfaces/playlists-db.interface'
-import { iCache } from '../interfaces/cache.interface'
+import { CACHE_STORE_NAME, iBloomBoxDBCache } from 'src/services/interfaces/playlists-db.interface'
+import { iCache } from 'src/services/interfaces/cache.interface'
 import { Console } from 'console'
 
 const INDEX_NAME = "identifierIndex"

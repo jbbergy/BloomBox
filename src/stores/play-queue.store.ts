@@ -1,8 +1,8 @@
 import { defineStore } from 'pinia'
 import { iFile } from 'src/services/interfaces/file.interface'
 import { useCacheStore } from './cache.store'
-import CoverImage from '../assets/img/cover.jpg'
-import { getRandomValue } from '../utils/random'
+import CoverImage from 'src/assets/img/cover.jpg'
+import { getRandomValue } from 'src/utils/random'
 import { iCache } from 'src/services/interfaces/cache.interface'
 
 const cacheStore = useCacheStore()

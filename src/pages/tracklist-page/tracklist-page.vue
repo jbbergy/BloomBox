@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts" setup>
-import BBTracklistHeader from '../../components/organisms/bb-tracklist-header/bb-tracklist-header.vue'
-import BBTracklistActions from '../../components/organisms/bb-tracklist-actions/bb-tracklist-actions.vue'
-import BBTracklist from '../../components/organisms/bb-tracklist/bb-tracklist.vue'
+import BBTracklistHeader from 'src/components/domains/header/bb-header.vue'
+import BBTracklistActions from 'src/components/domains/playlists/actions/bb-tracklist-actions.vue'
+import BBTracklist from 'src/components/domains/playlists/bb-tracklist.vue'
 </script>

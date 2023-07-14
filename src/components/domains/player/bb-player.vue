@@ -105,22 +105,22 @@
 <script lang="ts" setup>
 import { watch, computed, ref, onMounted } from 'vue'
 import InlineSvg from 'vue-inline-svg'
-import IconPlay from '../../../assets/icons/i-play.svg'
-import IconPause from '../../../assets/icons/i-pause.svg'
-import IconPrev from '../../../assets/icons/i-step-backward.svg'
-import IconNext from '../../../assets/icons/i-step-forward.svg'
-import IconLoop from '../../../assets/icons/i-loop.svg'
-import IconShuffle from '../../../assets/icons/i-shuffle.svg'
-import IconHeart from '../../../assets/icons/heart.svg'
-import IconHeartFilled from '../../../assets/icons/heart-filled.svg'
-import ImgCover from '../../../assets/img/cover.jpg'
-import BBTransportButton from '../../../components/atoms/bb-transport-button/bb-transport-button.vue'
-import BBProgress from '../../molecules/bb-progress/bb-progress.vue'
-import BBVolumeControl from '../../../components/molecules/bb-volume-control/bb-volume-control.vue'
+import IconPlay from 'src/assets/icons/i-play.svg'
+import IconPause from 'src/assets/icons/i-pause.svg'
+import IconPrev from 'src/assets/icons/i-step-backward.svg'
+import IconNext from 'src/assets/icons/i-step-forward.svg'
+import IconLoop from 'src/assets/icons/i-loop.svg'
+import IconShuffle from 'src/assets/icons/i-shuffle.svg'
+import IconHeart from 'src/assets/icons/heart.svg'
+import IconHeartFilled from 'src/assets/icons/heart-filled.svg'
+import ImgCover from 'src/assets/img/cover.jpg'
+import BBTransportButton from 'src/components/atoms/bb-transport-button/bb-transport-button.vue'
+import BBProgress from 'src/components/domains/player/progress/bb-progress.vue'
+import BBVolumeControl from 'src/components/domains/player/volume-control/bb-volume-control.vue'
 import { iFile } from 'src/services/interfaces/file.interface'
-import { usePlayQueueStore } from '../../../stores/play-queue.store'
-import { usePlayerStore } from '../../../stores/player.store'
-import { usePlaylistsStore } from '../../../stores/playlists.store'
+import { usePlayQueueStore } from 'src/stores/play-queue.store'
+import { usePlayerStore } from 'src/stores/player.store'
+import { usePlaylistsStore } from 'src/stores/playlists.store'
 import { iPlaylist } from 'src/services/interfaces/playlist.interface'
 
 const IS_SHUFFLE = 'is-shuffle'
@@ -185,7 +185,6 @@ const isFav = computed(() => {
   return false
 })
 const onCoverError = (event) => {
-  console.error('bb-player cover error', event)
   isCoverOnError.value = true
 }
 
@@ -386,4 +385,5 @@ watch(
       }
     }
   }
-}</style>
+}
+</style>

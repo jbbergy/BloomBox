@@ -50,13 +50,13 @@
 </template>
 
 <script lang="ts" setup>
-import BBTracklistFile from '../../components/organisms/bb-tracklist-file/bb-tracklist-file.vue'
-import { usePlaylistsStore } from '../../stores/playlists.store'
-import { usePlayQueueStore } from '../../stores/play-queue.store'
-import BBTracklistHeader from '../../components/organisms/bb-tracklist-header/bb-tracklist-header.vue'
-import { iFile } from '../../services/interfaces/file.interface';
-import { iPlaylist } from '../../services/interfaces/playlist.interface';
-import ImgCover from '../../assets/img/cover.jpg'
+import BBTracklistFile from 'src/components/organisms/bb-tracklist-file/bb-tracklist-file.vue'
+import { usePlaylistsStore } from 'src/stores/playlists.store'
+import { usePlayQueueStore } from 'src/stores/play-queue.store'
+import BBTracklistHeader from 'src/components/organisms/bb-tracklist-header/bb-tracklist-header.vue'
+import { iFile } from 'src/services/interfaces/file.interface';
+import { iPlaylist } from 'src/services/interfaces/playlist.interface';
+import ImgCover from 'src/assets/img/cover.jpg'
 
 const playlistsStore = usePlaylistsStore()
 const playQueueStore = usePlayQueueStore()

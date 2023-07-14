@@ -19,7 +19,7 @@
 
 <script lang="ts" setup>
 import InlineSvg from 'vue-inline-svg'
-import SvgLoading from '../../../assets/loading.svg'
+import SvgLoading from 'src/assets/loading.svg'
 
 interface Props {
   noBg?: boolean

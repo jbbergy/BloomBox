@@ -1,6 +1,6 @@
-import { iPlaylist } from './../interfaces/playlist.interface'
+import { iPlaylist } from 'src/services/interfaces/playlist.interface'
 import { openDB } from 'idb'
-import { PLAYLIST_STORE_NAME, iBloomBoxDB } from '../interfaces/playlists-db.interface'
+import { PLAYLIST_STORE_NAME, iBloomBoxDB } from 'src/services/interfaces/playlists-db.interface'
 
 const DATABASE_NAME = 'BBdb'
 export class PlaylistsService {

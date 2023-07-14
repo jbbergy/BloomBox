@@ -7,10 +7,10 @@
 </template>
 
 <script lang="ts" setup>
-import BBTree from '../../molecules/bb-tree/bb-tree.vue'
-import BBSearch from '../../molecules/bb-search/bb-search.vue'
-import BBPlaylistCreate from '../../molecules/bb-playilist-create/bb-playlist-create.vue'
-import { useGlobalStore } from '../../../stores/global.store'
+import BBTree from 'src/components/domains/library/tree/bb-tree.vue'
+import BBSearch from 'src/components/domains/header/search/bb-search.vue'
+import BBPlaylistCreate from 'src/components/domains/playlists/create/bb-playlist-create.vue'
+import { useGlobalStore } from 'src/stores/global.store'
 
 const globalStore = useGlobalStore()
 </script>

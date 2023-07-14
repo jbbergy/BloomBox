@@ -15,9 +15,9 @@
 
 <script lang="ts" setup>
 import InlineSvg from 'vue-inline-svg'
-import BBButton from '../../atoms/bb-button/bb-button.vue'
-import IconPlus from '../../../assets/icons/i-plus.svg'
-import { usePlaylistsStore } from '../../../stores/playlists.store'
+import BBButton from 'src/components/atoms/bb-button/bb-button.vue'
+import IconPlus from 'src/assets/icons/i-plus.svg'
+import { usePlaylistsStore } from 'src/stores/playlists.store'
 
 const playlistsStore = usePlaylistsStore()
 const addTracks = () => {

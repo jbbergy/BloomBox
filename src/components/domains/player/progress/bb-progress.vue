@@ -18,9 +18,9 @@
 </template>
 
 <script lang="ts" setup>
-import {onMounted, ref, computed, watch} from 'vue'
-import { usePlayerStore } from '../../../stores/player.store'
-import { usePlayQueueStore } from '../../../stores/play-queue.store'
+import { onMounted, ref, computed, watch } from 'vue'
+import { usePlayerStore } from 'src/stores/player.store'
+import { usePlayQueueStore } from 'src/stores/play-queue.store'
 
 const updateValue = ref(true)
 const seek = ref(0)
@@ -92,7 +92,6 @@ const onSeek = (event) => {
 </script>
 
 <style lang="scss">
-
 .bb-progress {
   display: flex;
   flex-direction: row;

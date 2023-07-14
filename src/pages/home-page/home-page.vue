@@ -33,10 +33,10 @@
 </template>
 
 <script setup lang="ts">
-import ImgCover from '../../assets/img/cover.jpg'
-import { usePlaylistsStore } from '../../stores/playlists.store'
-import BBCard from '../../components/atoms/bb-card/bb-card.vue'
-import { iPlaylist } from '../../services/interfaces/playlist.interface';
+import ImgCover from 'src/assets/img/cover.jpg'
+import { usePlaylistsStore } from 'src/stores/playlists.store'
+import BBCard from 'src/components/atoms/bb-card/bb-card.vue'
+import { iPlaylist } from 'src/services/interfaces/playlist.interface';
 
 const playlistsStore = usePlaylistsStore()
 

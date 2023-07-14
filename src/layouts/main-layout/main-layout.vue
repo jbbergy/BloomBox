@@ -62,12 +62,12 @@
 
 <script lang="ts" setup>
 import InlineSvg from 'vue-inline-svg'
-import SvgLoading from '../../assets/loading.svg'
-import { useGlobalStore } from '../../stores/global.store'
-import BBHeader from '../../components/organisms/bb-header/bb-header.vue'
-import BBSidebar from '../../components/organisms/bb-sidebar/bb-sidebar.vue'
-import BBPlayer from '../../components/organisms/bb-player/bb-player.vue'
-import BBModal from '../../components/atoms/bb-modal/bb-modal.vue'
+import SvgLoading from 'src/assets/loading.svg'
+import { useGlobalStore } from 'src/stores/global.store'
+import BBHeader from 'src/components/domains/header/bb-header.vue'
+import BBSidebar from 'src/components/domains/library/bb-sidebar.vue'
+import BBPlayer from 'src/components/domains/player/bb-player.vue'
+import BBModal from 'src/components/atoms/bb-modal/bb-modal.vue'
 import { ref, watch } from 'vue'
 
 const showDebug = ref(false)

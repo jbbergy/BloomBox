@@ -29,8 +29,8 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { usePlaylistsStore } from '../../../stores/playlists.store'
-import BBButton from '../../atoms/bb-button/bb-button.vue'
+import { usePlaylistsStore } from 'src/stores/playlists.store'
+import BBButton from 'src/components/atoms/bb-button/bb-button.vue'
 
 const showItems = ref(false)
 
@@ -78,7 +78,7 @@ const callFunction = async (func: CallableFunction) => {
       }
     }
   }
-  
+
   &__dots {
     position: relative;
     display: flex;

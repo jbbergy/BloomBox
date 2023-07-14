@@ -1,24 +1,30 @@
 <template>
   <BBFocusTrap>
-    <div class="bb-modal" id="BBModal">
-        <div class="bb-modal__container" id="BBModalContainer">
-            <div class="bb-modal__title">
-              <slot name="title" />
-            </div>
-            <div class="bb-modal__body">
-              <slot />
-            </div>
-            <div class="bb-modal__actions">
-              <slot name="actions" />
-            </div>
+    <div
+      class="bb-modal"
+      id="BBModal"
+    >
+      <div
+        class="bb-modal__container"
+        id="BBModalContainer"
+      >
+        <div class="bb-modal__title">
+          <slot name="title" />
         </div>
+        <div class="bb-modal__body">
+          <slot />
+        </div>
+        <div class="bb-modal__actions">
+          <slot name="actions" />
+        </div>
+      </div>
     </div>
   </BBFocusTrap>
 </template>
 
 <script lang="ts" setup>
 import { onMounted, ref } from 'vue'
-import BBFocusTrap from '../bb-focus-trap/bb-focus-trap.vue'
+import BBFocusTrap from 'src/components/atoms/bb-focus-trap/bb-focus-trap.vue'
 
 const modalEl = ref<HTMLElement | null>()
 const containerEl = ref<HTMLElement | null>()

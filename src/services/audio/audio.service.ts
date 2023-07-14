@@ -1,4 +1,4 @@
-import { AudioPlayer } from '../../api/audio/audio.api'
+import { AudioPlayer } from 'src/api/audio/audio.api'
 
 export class AudioService {
   private _instance: AudioPlayer | null

@@ -58,13 +58,13 @@
 
 <script lang="ts" setup>
 import { nextTick, ref } from 'vue'
-import BBModal from '../../atoms/bb-modal/bb-modal.vue'
+import BBModal from 'src/components/atoms/bb-modal/bb-modal.vue'
 import InlineSvg from 'vue-inline-svg'
-import BBButton from '../../atoms/bb-button/bb-button.vue'
-import IconSetting from '../../../assets/icons/i-settings.svg'
-import { usePlaylistsStore } from '../../../stores/playlists.store'
-import { useGlobalStore } from '../../../stores/global.store'
-import { useCacheStore } from '../../../stores/cache.store'
+import BBButton from 'src/components/atoms/bb-button/bb-button.vue'
+import IconSetting from 'src/assets/icons/i-settings.svg'
+import { usePlaylistsStore } from 'src/stores/playlists.store'
+import { useGlobalStore } from 'src/stores/global.store'
+import { useCacheStore } from 'src/stores/cache.store'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()

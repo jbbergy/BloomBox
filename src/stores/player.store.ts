@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { AudioService } from '../services/audio/audio.service'
+import { AudioService } from 'src/services/audio/audio.service'
 
 export const usePlayerStore = defineStore('player', {
   state: () => ({

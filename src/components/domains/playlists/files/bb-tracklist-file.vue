@@ -44,15 +44,15 @@
 </template>
 
 <script lang="ts" setup>
-import PicturePlaceholder from '../../../assets/img/cover.jpg'
+import PicturePlaceholder from 'src/assets/img/cover.jpg'
 import { PropType, computed /*, onUnmounted*/, onBeforeMount, onMounted, ref, watch } from 'vue'
 import { iFile } from 'src/services/interfaces/file.interface'
 import InlineSvg from 'vue-inline-svg'
-import IconPlay from '../../../assets/icons/i-play.svg'
-import ImgCover from '../../../assets/img/cover.jpg'
-import { usePlayQueueStore } from '../../../stores/play-queue.store'
-import { usePlaylistsStore } from '../../../stores/playlists.store'
-import { useCacheStore } from '../../../stores/cache.store'
+import IconPlay from 'src/assets/icons/i-play.svg'
+import ImgCover from 'src/assets/img/cover.jpg'
+import { usePlayQueueStore } from 'src/stores/play-queue.store'
+import { usePlaylistsStore } from 'src/stores/playlists.store'
+import { useCacheStore } from 'src/stores/cache.store'
 import { iCache } from 'src/services/interfaces/cache.interface'
 
 const cacheStore = useCacheStore()

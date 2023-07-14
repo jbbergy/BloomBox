@@ -28,7 +28,7 @@
 
 <script lang="ts" setup>
 import { computed, watch, ref } from 'vue'
-import { usePlaylistsStore } from '../../../stores/playlists.store'
+import { usePlaylistsStore } from 'src/stores/playlists.store'
 
 const props = defineProps({
   isSearchHeader: {

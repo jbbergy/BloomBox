@@ -44,15 +44,15 @@
 </template>
 
 <script lang="ts" setup>
-import { iPlaylist } from '../../../services/interfaces/playlist.interface'
+import { iPlaylist } from 'src/services/interfaces/playlist.interface'
 import { v4 as uuid } from 'uuid'
 import InlineSvg from 'vue-inline-svg'
 import { ref } from 'vue'
-import { usePlaylistsStore } from '../../../stores/playlists.store'
-import BBButton from '../../atoms/bb-button/bb-button.vue'
-import BBInput from '../../atoms/bb-input/bb-input.vue'
-import BBModal from '../../atoms/bb-modal/bb-modal.vue'
-import IconPlus from '../../../assets/icons/i-plus.svg'
+import { usePlaylistsStore } from 'src/stores/playlists.store'
+import BBButton from 'src/components/atoms/bb-button/bb-button.vue'
+import BBInput from 'src/components/atoms/bb-input/bb-input.vue'
+import BBModal from 'src/components/atoms/bb-modal/bb-modal.vue'
+import IconPlus from 'src/assets/icons/i-plus.svg'
 
 const playlistsStore = usePlaylistsStore()
 const isCreateModalOpen = ref(false)

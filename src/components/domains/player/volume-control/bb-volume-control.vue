@@ -1,6 +1,9 @@
 <template>
   <div class="bb-volume-control">
-    <BBTransportButton @click="isMute = !isMute" no-bg>
+    <BBTransportButton
+      @click="isMute = !isMute"
+      no-bg
+    >
       <inline-svg
         :src="soundIcon"
         aria-label="Activer/désactiver le son"
@@ -22,11 +25,11 @@
 <script lang="ts" setup>
 import InlineSvg from 'vue-inline-svg'
 import { computed, ref, watch, onMounted } from 'vue'
-import BBTransportButton from '../../../components/atoms/bb-transport-button/bb-transport-button.vue'
-import { usePlayQueueStore } from '../../../stores/play-queue.store'
-import { usePlayerStore } from '../../../stores/player.store'
-import IconSoundUp from '../../../assets/icons/i-sound-up.svg'
-import IconSoundOff from '../../../assets/icons/i-sound-off.svg'
+import BBTransportButton from 'src/components/atoms/bb-transport-button/bb-transport-button.vue'
+import { usePlayQueueStore } from 'src/stores/play-queue.store'
+import { usePlayerStore } from 'src/stores/player.store'
+import IconSoundUp from 'src/assets/icons/i-sound-up.svg'
+import IconSoundOff from 'src/assets/icons/i-sound-off.svg'
 
 const DEFAULT_VOLUME = 'default-volume'
 
@@ -38,7 +41,7 @@ const volumeBackup = ref(0)
 
 const soundIcon = computed(() => isMute.value ? IconSoundOff : IconSoundUp)
 
-const isFileLoaded = computed(() => !!playQueueStore.playingFile )
+const isFileLoaded = computed(() => !!playQueueStore.playingFile)
 
 const volume = computed(() => playerStore?.defaultVolume || 0)
 
@@ -88,6 +91,7 @@ const onVolumeChange = (event) => {
       color: #fff;
     }
   }
+
   &__slider {
     width: 100%;
     -webkit-appearance: none;
@@ -117,5 +121,4 @@ const onVolumeChange = (event) => {
       }
     }
   }
-}
-</style>
+}</style>

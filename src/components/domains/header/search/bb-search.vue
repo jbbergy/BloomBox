@@ -25,12 +25,12 @@
 
 <script lang="ts" setup>
 import InlineSvg from 'vue-inline-svg'
-import BBButton from '../../atoms/bb-button/bb-button.vue'
-import BBInput from '../../atoms/bb-input/bb-input.vue'
-import IconHome from '../../../assets/icons/i-home.svg'
-import IconSort from '../../../assets/icons/i-sort.svg'
+import BBButton from 'src/components/atoms/bb-button/bb-button.vue'
+import BBInput from 'src/components/atoms/bb-input/bb-input.vue'
+import IconHome from 'src/assets/icons/i-home.svg'
+import IconSort from 'src/assets/icons/i-sort.svg'
 import { useRouter } from 'vue-router'
-import { usePlaylistsStore } from '../../../stores/playlists.store'
+import { usePlaylistsStore } from 'src/stores/playlists.store'
 const playlistsStore = usePlaylistsStore()
 const router = useRouter()
 

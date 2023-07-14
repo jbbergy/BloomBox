@@ -1,4 +1,4 @@
-import { iMetadata } from '../interfaces/file.interface'
+import { iMetadata } from 'src/interfaces/file.interface'
 
 export function readMetadata(filePath: string): Promise<iMetadata> {
   try {

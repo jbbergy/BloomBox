@@ -23,10 +23,10 @@
 
 <script lang="ts" setup>
 import { computed, watch } from 'vue'
-import BBTracklistFile from '../bb-tracklist-file/bb-tracklist-file.vue'
-import { usePlaylistsStore } from '../../../stores/playlists.store'
-import { usePlayQueueStore } from '../../../stores/play-queue.store'
-import { iFile } from '../../../services/interfaces/file.interface'
+import BBTracklistFile from './files/bb-tracklist-file.vue'
+import { usePlaylistsStore } from 'src/stores/playlists.store'
+import { usePlayQueueStore } from 'src/stores/play-queue.store'
+import { iFile } from 'src/services/interfaces/file.interface'
 
 const playQueueStore = usePlayQueueStore()
 const playlistsStore = usePlaylistsStore()
