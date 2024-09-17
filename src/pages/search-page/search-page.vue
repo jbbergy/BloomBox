@@ -50,10 +50,10 @@
 </template>
 
 <script lang="ts" setup>
-import BBTracklistFile from 'src/components/organisms/bb-tracklist-file/bb-tracklist-file.vue'
+import BBTracklistFile from 'src/components/domains/playlists/files/bb-tracklist-file.vue'
 import { usePlaylistsStore } from 'src/stores/playlists.store'
 import { usePlayQueueStore } from 'src/stores/play-queue.store'
-import BBTracklistHeader from 'src/components/organisms/bb-tracklist-header/bb-tracklist-header.vue'
+import BBTracklistHeader from 'src/components/domains/playlists/headers/bb-tracklist-header.vue'
 import { iFile } from 'src/services/interfaces/file.interface';
 import { iPlaylist } from 'src/services/interfaces/playlist.interface';
 import ImgCover from 'src/assets/img/cover.jpg'
